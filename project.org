@@ -1,0 +1,79 @@
+* Structure 
+** Base
+*** Hash
+* Log
+  :PROPERTIES:
+  :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
+  :END:
+** DONE Research Python organization 
+       DEADLINE: <2016-04-25 Mon>
+       CLOCK: [2016-04-25 Mon 16:37]--[2016-04-25 Mon 17:25] =>  0:48
+- Read article found here: http://docs.python-guide.org/en/latest/writing/structure/
+** TODO Produce Levenshtein distance algorithm implement
+       DEADLINE: <2016-04-26 Tue>
+- Either by hand or some module
+*** TODO Review python-Levenshtein source (David Necas, 2002)
+        DEADLINE: <2016-04-26 Tue>
+        CLOCK: [2016-04-25 Mon 17:25]--[2016-04-25 Mon 17:50] =>  0:25
+- Levenshtein distance implement python module. Written in C.
+** DONE Create python project, first commit to git
+       DEADLINE: <2016-04-25 Mon>
+       CLOCK: [2016-04-25 Mon 18:10]--[2016-04-25 Mon 18:16] =>  0:06
+       CLOCK: [2016-04-25 Mon 22:33]--[2016-04-25 Mon 23:50] =>  1:17
+- Project structure based on python sample structure from kenneth reitz: https://github.com/kennethreitz/samplemod
+- docs generated with Sphinx
+*** DONE Review Sphinx python documentation generator. Produce docs directory.
+        DEADLINE: <2016-04-25 Mon>
+        CLOCK: [2016-04-25 Mon 19:23]--[2016-04-25 Mon 20:01] =>  0:38
+- Source: http://www.sphinx-doc.org/en/stable/tutorial.html
+** DONE Research Python Distribution Utilities
+   DEADLINE: <2016-04-27 Wed>
+   CLOCK: [2016-04-27 Wed 20:42]--[2016-04-27 Wed 21:17] =>  0:35
+- Python Distribution Utilities, aka "Disutils"
+  - responsibilities: 
+    1. write setup script setup.py
+    2. a setup configuration file
+** DONE Research Nose Python testing framework
+   DEADLINE: <2016-04-28 Thu>
+   CLOCK: [2016-04-29 Thu 13:51]--[2016-04-29 Fri 15:03] =>  1:12
+- Use for unit tests for classes, methods and modules
+
+** DONE Research SHA1 Hashing
+   DEADLINE: <2016-04-29 Fri>
+   CLOCK: [2016-04-29 Fri 17:55]--[2016-04-29 Fri 18:25] =>  0:30
+- Secure Hash Algorithm
+- cryptographic hash
+- produces a 20-byte hash value called the "message digest"
+- typically rendered as a 40-digit hexademical number
+*** Hash functions
+Have four main properties:
+**** it is quick to compute the hash value for any given message
+     This is very important for leven-squash
+**** it is infeasible to generate a message from its hash value except by trying all possible messages
+**** a small change to a message should change the hash value so extensively that the new hash value appears uncorrelated with the old hash value
+**** it is infeasible to find two different messages with the same hash value
+     This is very important for leven-squash
+
+** TODO Create levenstein source base structure
+   DEADLINE: <2016-04-29 Fri>
+   CLOCK: [2016-04-29 Fri 18:26]--[2016-04-29 Fri 19:47] =>  1:21
+-
+
+** TODO Reread compression heuristic blog post
+   DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 01:57]--[2016-04-30 Sat 02:16] =>  0:19
+** DONE Look over sample unit tests in Levenstein implementation
+   DEADLINE: <2016-04-29 Fri>
+   CLOCK: [2016-04-29 Fri 21:15]--[2016-04-29 Fri 22:47] =>  1:32
+* Tasks [0/1]
+** TODO Organize plan for project
+      DEADLINE: <2016-04-20 Wed>
+- tasks
+- by when should these tasks be completed?
+** TODO Plan out code
+   DEADLINE: <2016-04-28 Thu>
+** TODO Write implementation
+   DEADLINE: <2016-04-28 Thu>
+- basic implementation 
+*** TODO Figure out hashing stuff
+
