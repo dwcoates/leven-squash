@@ -9,9 +9,11 @@
        DEADLINE: <2016-04-25 Mon>
        CLOCK: [2016-04-25 Mon 16:37]--[2016-04-25 Mon 17:25] =>  0:48
 - Read article found here: http://docs.python-guide.org/en/latest/writing/structure/
-** TODO Produce Levenshtein distance algorithm implement
+** DONE Produce absolute Levenshtein distance algorithm implement
        DEADLINE: <2016-04-26 Tue>
+       CLOCK: [2016-04-25 Mon 19:34]--[2016-04-25 Mon 20:35] =>  0:55
 - Either by hand or some module
+- Using python-Levenshtein
 *** TODO Review python-Levenshtein source (David Necas, 2002)
         DEADLINE: <2016-04-26 Tue>
         CLOCK: [2016-04-25 Mon 17:25]--[2016-04-25 Mon 17:50] =>  0:25
@@ -54,26 +56,111 @@ Have four main properties:
 **** it is infeasible to find two different messages with the same hash value
      This is very important for leven-squash
 
-** TODO Create levenstein source base structure
-   DEADLINE: <2016-04-29 Fri>
-   CLOCK: [2016-04-29 Fri 18:26]--[2016-04-29 Fri 19:47] =>  1:21
--
-
-** TODO Reread compression heuristic blog post
+** DONE Research Python hash library
    DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 21:35]--[2016-04-30 Sat 22:14] =>  0:39
+   CLOCK: [2016-04-30 Sat 19:05]--[2016-04-30 Sat 19:11] =>  0:06
+- library source: https://hg.python.org/cpython/file/2.7/Lib/hashlib.py
+- hashlib
+- the documentation can be found here: https://docs.python.org/2/library/hashlib.html#module-hashlib
+- As per the library source, named constructors are faster implementations are much faster than using new()
+
+** TODO Create levenstein source base structure
+   DEADLINE: <2016-05-01 Sun>
+   CLOCK: [2016-04-30 Sat 20:00]--[2016-04-30 Sat 20:33] =>  0:33
+   CLOCK: [2016-04-29 Fri 18:26]--[2016-04-29 Fri 19:47] =>  1:21 
+** DONE Look into Python exception handling mechanisms
+   DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 20:34]--[2016-04-30 Sat 20:57] =>  0:23
+- Read here: https://docs.python.org/2/tutorial/errors.html
+** DONE Reread compression heuristic blog post
+   DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 02:49]--[2016-04-30 Sat 03:06] =>  0:17
    CLOCK: [2016-04-30 Sat 01:57]--[2016-04-30 Sat 02:16] =>  0:19
 ** DONE Look over sample unit tests in Levenstein implementation
    DEADLINE: <2016-04-29 Fri>
    CLOCK: [2016-04-29 Fri 21:15]--[2016-04-29 Fri 22:47] =>  1:32
-* Tasks [0/1]
-** TODO Organize plan for project
-      DEADLINE: <2016-04-20 Wed>
-- tasks
-- by when should these tasks be completed?
-** TODO Plan out code
-   DEADLINE: <2016-04-28 Thu>
-** TODO Write implementation
-   DEADLINE: <2016-04-28 Thu>
-- basic implementation 
-*** TODO Figure out hashing stuff
+** DONE Look over Java MessageDigest API
+   DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 18:35]--[2016-04-30 Sat 18:40] =>  0:05
+- This MessageDigest class provides applications the functionality of a message digest algorithm, such as SHA-1 or SHA-256.
+- MessageDigest.getInstance() throws a NoSuchAlgorithm exception. 
+** DONE Code compression.py
+   DEADLINE: <2016-04-30 Sat>
+   CLOCK: [2016-04-30 Sat 23:15]--[2016-05-01 Sun 00:09] =>  0:54
+- compression.py contains the basic functionality for performing variable compressions on data.
+*** DONE Lookup Python set()
+    CLOCK: [2016-04-30 Sat 23:16]--[2016-04-30 Sat 23:24] =>  0:08
+*** DONE Lookup Python raise
+    CLOCK: [2016-04-30 Sat 23:34]--[2016-04-30 Sat 23:35] =>  0:01
 
+** TODO Write benchmark tests for compression.py
+   DEADLINE: <2016-05-01 Sun>
+   CLOCK: [2016-05-01 Sun 01:14]--[2016-05-01 Sun 01:51] =>  0:37
+** DONE Look up Python timers
+   CLOCK: [2016-05-01 Sun 02:51]--[2016-05-01 Sun 03:47] =>  0:56
+- time.clock() is preferred for performance measurement as a basic time wrapper
+- timeit.Timer() is a very good module for benchmarking a function.
+** DONE Write a unit test for compression.py
+   DEADLINE: <2016-05-02 Mon>
+   CLOCK: [2016-05-02 Mon 19:06]--[2016-05-02 Mon 19:26] =>  0:20
+   CLOCK: [2016-05-02 Mon 03:17]--[2016-05-02 Mon 03:56] =>  0:39
+** DONE __init__.py and importing package modules
+   CLOCK: [2016-05-02 Mon 20:32]--[2016-05-02 Mon 20:45] =>  0:13
+
+** DONE Look at Exception class
+   CLOCK: [2016-05-02 Mon 20:46]--[2016-05-02 Mon 21:26] =>  0:40
+*** DONE Check out raise again
+    CLOCK: [2016-05-02 Mon 20:52]--[2016-05-02 Mon 21:26] =>  0:34
+- http://stackoverflow.com/questions/13957829/how-to-use-raise-keyword-in-python
+
+** DONE Fix bug in unit test for compression.py
+   CLOCK: [2016-05-02 Mon 22:34]--[2016-05-02 Mon 22:52] =>  0:18
+- why is raise not working?
+#+begin_src emacs-lisp
+    def test_construction(self):
+        print("TestCompression:test_construction to test Compressor")
+
+        c = Compressor()
+
+        try:
+            print("Compressor.getN(): " + c.getN())
+            print("Compressor.getC(): " + c.getC())
+        except Exception as e:
+            print("Print error: " + str(e))
+#            raise e
+#+end_src
+** DONE Look into Python inheritance and polymorphism semantics/syntax
+   CLOCK: [2016-05-03 Tue 00:06]--[2016-05-03 Tue 00:09] =>  0:03
+** DONE Investigate Python logger module
+   CLOCK: [2016-05-03 Tue 00:09]--[2016-05-03 Tue 00:35] =>  0:26
+- https://docs.python.org/2/library/logging.html
+   
+** DONE Add basic compressor to compression.py to generate signatures
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-03 Tue 12:08]--[2016-05-03 Tue 01:10] => 1:02
+- added base code. Completely untested.
+** TODO Locate module for easily building python strings (which are immutable, of course)
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-03 Tue 01:11]--[2016-05-03 Tue 01:53] =>  0:42
+- Strings in Python are immutable. So a module like Java's StringBuilder is what's needed.
+- just use join, it's not that much slower
+
+** TODO Debug compressor.py
+   DEADLINE: <2016-05-03 Tue>
+** TODO Unit test StringCompressorBasic
+   DEADLINE: <2016-05-03 Tue>
+
+* Tasks [0/1]
+** TODO Why are the named constructors for hashlib much faster than using new?
+   DEADLINE: <2016-05-01 Sun>
+"A generic new() constructor that takes the string name of the desired
+algorithm as its first parameter also exists to allow access to the
+above listed hashes as well as any other algorithms that your OpenSSL
+library may offer. The named constructors are much faster than new()
+and should be preferred."
+
+- Take from https://docs.python.org/2/library/hashlib.html#module-hashlib
+
+** TODO Run benchmark tests on hashlib constructors vs new()
+   DEADLINE: <2016-04-30 Sat>
