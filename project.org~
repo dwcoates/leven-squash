@@ -1,0 +1,44 @@
+* Log
+  :PROPERTIES:
+  :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
+  :END:
+** DONE Research Python organization 
+       DEADLINE: <2016-04-25 Mon>
+       CLOCK: [2016-04-25 Mon 16:37]--[2016-04-25 Mon 17:25] =>  0:48
+- Read article found here: http://docs.python-guide.org/en/latest/writing/structure/
+** TODO Produce Levenshtein distance algorithm implement
+       DEADLINE: <2016-04-26 Tue>
+- Either by hand or some module
+*** TODO Review python-Levenshtein source (David Necas, 2002)
+        DEADLINE: <2016-04-26 Tue>
+        CLOCK: [2016-04-25 Mon 17:25]--[2016-04-25 Mon 17:50] =>  0:25
+- Levenshtein distance implement python module. Written in C.
+** DONE Create python project, first commit to git
+       DEADLINE: <2016-04-25 Mon>
+       CLOCK: [2016-04-25 Mon 18:10]--[2016-04-25 Mon 18:16] =>  0:06
+       CLOCK: [2016-04-25 Mon 22:33]--[2016-04-25 Mon 23:50] =>  1:17
+- Project structure based on python sample structure from kenneth reitz: https://github.com/kennethreitz/samplemod
+- docs generated with Sphinx
+*** DONE Review Sphinx python documentation generator. Produce docs directory.
+        DEADLINE: <2016-04-25 Mon>
+        CLOCK: [2016-04-25 Mon 19:23]--[2016-04-25 Mon 20:01] =>  0:38
+- Source: http://www.sphinx-doc.org/en/stable/tutorial.html
+** DONE Research Python Distribution Utilities
+   DEADLINE: <2016-04-27 Wed>
+   CLOCK: [2016-04-27 Wed 20:42]--[2016-04-27 Wed 21:17] =>  0:35
+- Python Distribution Utilities, aka "Disutils"
+  - responsibilities: 
+    1. write setup script setup.py
+    2. a setup configuration file       
+* Tasks [0/1]
+** TODO Organize plan for project
+      DEADLINE: <2016-04-20 Wed>
+- tasks
+- by when should these tasks be completed?
+** TODO Plan out code
+   DEADLINE: <2016-04-28 Thu>
+** TODO Write implementation
+   DEADLINE: <2016-04-28 Thu>
+- basic implementation 
+*** TODO Figure out hashing stuff
+

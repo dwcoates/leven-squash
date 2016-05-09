@@ -1,0 +1,64 @@
+from levenshtein.compression import Compressor, StringCompressorBasic
+
+import sys
+
+# this is mostly just practice for using nose and python
+class TestCompression:
+    @classmethod
+    def setup(self):
+        print("TestCompression:setup()")
+    @classmethod
+    def teardown(self):
+        print("TestCompression:teardown()")
+    @classmethod
+    def setup_class(self):
+        print("TestCompression:setup_class()")
+    @classmethod
+    def teardown_class(self):
+        print("TestCompression:teardown_class()")
+
+    def test_basic(name):
+        print("TestCompression:test_construction to test Compressor")
+
+        x = Compressor()
+        c = 33
+        n = 44
+        print("Value for C in compression: " + str(c))
+        print("Value for N in compression: " + str(n))
+
+        print("c.setN(" + str(n) + ")")
+        x.setN(n)
+        print("c.setC(" + str(c) + ")")
+        x.setC(c)
+
+        try:
+            print("Compressor.getN(): " + str(x.getN()))
+            print("Compressor.getC(): " + str(x.getC()))
+        except Exception as e:
+            print("Print error: " + str(e))
+
+class TestCompressionBasic (TestCompression):
+    def setup(self):
+        print("TestBasic:setup()")
+    def teardown(self):
+        print("TestBasic:teardown()")
+    @classmethod
+    def setup_class(self):
+        print("TestBasic:setup_class()")
+    @classmethod
+    def teardown_class(self):
+        print("TestBasic:teardown_class()")
+
+    def test_compression(self):
+        sc = StringCompressorBasic()
+        print("StrinCompressorBasic:compress(): ")
+        s = "hello"
+        # add benchmark here
+        input = ''
+        with open('~/workspace/leven-squash/data/10001.txt', 'r') as f:
+            input = f.read()
+        print("Compression of string '" + s + "': " + str(sc.compress(s)))
+
+
+t = TestCompressionBasic()
+t.test_compression()

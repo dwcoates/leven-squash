@@ -134,23 +134,71 @@ Have four main properties:
    CLOCK: [2016-05-03 Tue 00:06]--[2016-05-03 Tue 00:09] =>  0:03
 ** DONE Investigate Python logger module
    CLOCK: [2016-05-03 Tue 00:09]--[2016-05-03 Tue 00:35] =>  0:26
-- https://docs.python.org/2/library/logging.html
-   
+- https://docs.python.org/2/library/logging.html   
 ** DONE Add basic compressor to compression.py to generate signatures
    DEADLINE: <2016-05-03 Tue>
    CLOCK: [2016-05-03 Tue 12:08]--[2016-05-03 Tue 01:10] => 1:02
 - added base code. Completely untested.
-** TODO Locate module for easily building python strings (which are immutable, of course)
+** DONE Locate module for easily building python strings (which are immutable, of course)
    DEADLINE: <2016-05-03 Tue>
-   CLOCK: [2016-05-03 Tue 01:11]--[2016-05-03 Tue 01:53] =>  0:42
+   CLOCK: [2016-05-03 Tue 01:11]--[2016-05-03 Tue 01:33] =>  0:22
 - Strings in Python are immutable. So a module like Java's StringBuilder is what's needed.
 - just use join, it's not that much slower
-
-** TODO Debug compressor.py
+** DONE Debug compressor.py
    DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-09 Mon 01:35]--[2016-05-09 Mon 02:04] =>  0:29
+   CLOCK: [2016-05-09 Mon 00:45]--[2016-05-09 Mon 01:11] =>  0:26
+   CLOCK: [2016-05-09 Mon 00:24]--[2016-05-09 Mon 00:36] =>  0:12
+   CLOCK: [2016-05-04 Wed 08:40]--[2016-05-04 Wed 08:55] =>  0:15
+   CLOCK: [2016-05-03 Tue 20:40]--[2016-05-03 Tue 20:56] =>  0:16
+   CLOCK: [2016-05-03 Tue 16:53]--[2016-05-03 Tue 16:54] =>  0:01
+   CLOCK: [2016-05-03 Tue 16:30]--[2016-05-03 Tue 16:48] =>  0:18
+- NameError: global name 'compress_alt' is not defined being thrown with nosetests
+- Compressed output is for some reason a single character in length. Have to figure out this bug
+- concerned that python's dynamic handling of int/long sizes is a problem
+- Bug located: improper use of python's join method for sequences. There was a bit of misdirection around python's dynamic handling of primitive integer types
+** DONE Find large text strings for test data
+   CLOCK: [2016-05-09 Mon 00:11]--[2016-05-09 Mon 00:22] =>  0:11
+- created leven-squash/data directory with Gutenburg books as sample documents
+** DONE Troubleshoot nosetests bug
+   CLOCK: [2016-05-09 Mon 00:36]--[2016-05-09 Mon 00:44] =>  0:08
+- having trouble targeting a single module, probably a dumb mistake. 
+- was making an unfortunate syntatical mistake. Need to be careful with absolute paths
+- http://nose.readthedocs.io/en/latest/usage.html
+** DONE Look back at compression heuristic C and N characteristics
+   CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
 ** TODO Unit test StringCompressorBasic
    DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
+- improve the test now that the compressor module is in at least working order
+** TODO Try to get Python shell working in emacs
+   CLOCK: [2016-05-03 Tue 13:47]--[2016-05-03 Tue 13:59] =>  0:12
+** DONE Range vs xrange in Python
+   CLOCK: [2016-05-03 Tue 16:20]--[2016-05-03 Tue 16:26] =>  0:06
+- range generates a list conprised of the range, while xrange produces elements as needed, and so is space efficient if a loop is likely to exit abruptly.
+** DONE Configure Python environment for emacs to support autocompletion and documentation
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-03 Tue 17:46]--[2016-05-03 Tue 18:08] =>  0:22
+- current python environment is okay, but there are some problems that are making it much more laborous than it should be: autocompletion and lack of easy documentation access.
 
++ enabled jedi-company in emacs config for autocompletion popups and documentation access.
+** TODO Add Python project navigation functionality to emacs
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-03 Tue 19:51]--[2016-05-03 Tue 20:11] =>  0:20
+- currently stuff definition lookup is confined to working file.
+** DONE check join() 
+   CLOCK: [2016-05-09 Mon 01:56]--[2016-05-09 Mon 02:03] =>  0:07
+- right, so I have been misusing python's join() function to devastating effect
+** TODO Revise current test module for compression.py
+   DEADLINE: <2016-05-09 Mon>
+- clean the code
+- think of a way to improve the testing output
+** TODO Investigate proper polymorhphism practice in Python
+   DEADLINE: <2016-05-09 Mon>
+- the need for this is mainly apparent right now in the testing modules, but it's obviously generally very important
+** TODO Clean StringCompressorBasic
+   DEADLINE: <2016-05-09 Mon>
+- There are various comments to be addressed in the current code
 * Tasks [0/1]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
@@ -164,3 +212,4 @@ and should be preferred."
 
 ** TODO Run benchmark tests on hashlib constructors vs new()
    DEADLINE: <2016-04-30 Sat>
+** TODO 
