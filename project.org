@@ -65,7 +65,7 @@ Have four main properties:
 - the documentation can be found here: https://docs.python.org/2/library/hashlib.html#module-hashlib
 - As per the library source, named constructors are faster implementations are much faster than using new()
 
-** TODO Create levenstein source base structure
+** DONE Create levenstein source base structure
    DEADLINE: <2016-05-01 Sun>
    CLOCK: [2016-04-30 Sat 20:00]--[2016-04-30 Sat 20:33] =>  0:33
    CLOCK: [2016-04-29 Fri 18:26]--[2016-04-29 Fri 19:47] =>  1:21 
@@ -94,9 +94,6 @@ Have four main properties:
 *** DONE Lookup Python raise
     CLOCK: [2016-04-30 Sat 23:34]--[2016-04-30 Sat 23:35] =>  0:01
 
-** TODO Write benchmark tests for compression.py
-   DEADLINE: <2016-05-01 Sun>
-   CLOCK: [2016-05-01 Sun 01:14]--[2016-05-01 Sun 01:51] =>  0:37
 ** DONE Look up Python timers
    CLOCK: [2016-05-01 Sun 02:51]--[2016-05-01 Sun 03:47] =>  0:56
 - time.clock() is preferred for performance measurement as a basic time wrapper
@@ -145,6 +142,7 @@ Have four main properties:
 - Strings in Python are immutable. So a module like Java's StringBuilder is what's needed.
 - just use join, it's not that much slower
 ** DONE Debug compressor.py
+<<<<<<< HEAD
    DEADLINE: <2016-05-03 Tue>
    CLOCK: [2016-05-09 Mon 01:35]--[2016-05-09 Mon 02:04] =>  0:29
    CLOCK: [2016-05-09 Mon 00:45]--[2016-05-09 Mon 01:11] =>  0:26
@@ -167,6 +165,50 @@ Have four main properties:
 - http://nose.readthedocs.io/en/latest/usage.html
 ** DONE Look back at compression heuristic C and N characteristics
    CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
+<<<<<<< HEAD
+** TODO Unit test StringCompressorBasic [0/1]
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
+- improve the test now that the compressor module is in at least working order
+*** TODO Write benchmark tests for StringCompressorBasic
+   DEADLINE: <2016-05-01 Sun>
+   CLOCK: [2016-05-01 Sun 01:14]--[2016-05-01 Sun 01:51] =>  0:37
+
+** TODO Try to get Python shell working in emacs
+   CLOCK: [2016-05-03 Tue 13:47]--[2016-05-03 Tue 13:59] =>  0:12
+** DONE Range vs xrange in Python
+   CLOCK: [2016-05-03 Tue 16:20]--[2016-05-03 Tue 16:26] =>  0:06
+- range generates a list conprised of the range, while xrange produces elements as needed, and so is space efficient if a loop is likely to exit abruptly.
+** DONE Configure Python environment for emacs to support autocompletion and documentation
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-03 Tue 17:46]--[2016-05-03 Tue 18:08] =>  0:22
+- current python environment is okay, but there are some problems that are making it much more laborous than it should be: autocompletion and lack of easy documentation access.
+
+=======
+=======
+   DEADLINE: <2016-05-03 Tue>
+   CLOCK: [2016-05-09 Mon 01:35]--[2016-05-09 Mon 02:04] =>  0:29
+   CLOCK: [2016-05-09 Mon 00:45]--[2016-05-09 Mon 01:11] =>  0:26
+   CLOCK: [2016-05-09 Mon 00:24]--[2016-05-09 Mon 00:36] =>  0:12
+   CLOCK: [2016-05-04 Wed 08:40]--[2016-05-04 Wed 08:55] =>  0:15
+   CLOCK: [2016-05-03 Tue 20:40]--[2016-05-03 Tue 20:56] =>  0:16
+   CLOCK: [2016-05-03 Tue 16:53]--[2016-05-03 Tue 16:54] =>  0:01
+   CLOCK: [2016-05-03 Tue 16:30]--[2016-05-03 Tue 16:48] =>  0:18
+- NameError: global name 'compress_alt' is not defined being thrown with nosetests
+- Compressed output is for some reason a single character in length. Have to figure out this bug
+- concerned that python's dynamic handling of int/long sizes is a problem
+- Bug located: improper use of python's join method for sequences. There was a bit of misdirection around python's dynamic handling of primitive integer types
+** DONE Find large text strings for test data
+   CLOCK: [2016-05-09 Mon 00:11]--[2016-05-09 Mon 00:22] =>  0:11
+- created leven-squash/data directory with Gutenburg books as sample documents
+** DONE Troubleshoot nosetests bug
+   CLOCK: [2016-05-09 Mon 00:36]--[2016-05-09 Mon 00:44] =>  0:08
+- having trouble targeting a single module, probably a dumb mistake. 
+- was making an unfortunate syntatical mistake. Need to be careful with absolute paths
+- http://nose.readthedocs.io/en/latest/usage.html
+** DONE Look back at compression heuristic C and N characteristics
+   CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
 ** TODO Unit test StringCompressorBasic
    DEADLINE: <2016-05-03 Tue>
    CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
@@ -181,6 +223,10 @@ Have four main properties:
    CLOCK: [2016-05-03 Tue 17:46]--[2016-05-03 Tue 18:08] =>  0:22
 - current python environment is okay, but there are some problems that are making it much more laborous than it should be: autocompletion and lack of easy documentation access.
 
+<<<<<<< HEAD
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
+=======
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
 + enabled jedi-company in emacs config for autocompletion popups and documentation access.
 ** TODO Add Python project navigation functionality to emacs
    DEADLINE: <2016-05-03 Tue>
@@ -193,12 +239,65 @@ Have four main properties:
    DEADLINE: <2016-05-09 Mon>
 - clean the code
 - think of a way to improve the testing output
+<<<<<<< HEAD
+<<<<<<< HEAD
+- add benchmark
+** DONE Investigate class and instance variables in Python
+   DEADLINE: <2016-05-09 Mon>
+   CLOCK: [2016-05-09 Mon 16:12]--[2016-05-09 Mon 16:28] =>  0:16
+** DONE Investigate polymorphism practice in Python
+   DEADLINE: <2016-05-09 Mon>
+   CLOCK: [2016-05-09 Mon 18:11]--[2016-05-09 Mon 18:45] =>  0:34
+- The need for this is mainly apparent right now in the testing modules, but it's obviously generally very important
+- reading this article: http://blog.thedigitalcatonline.com/blog/2014/08/21/python-3-oop-part-4-polymorphism/#.VzEKPFYrKkA 
+- 
+** TODO Clean StringCompressorBasic
+   DEADLINE: <2016-05-09 Mon>
+- There are various comments to be addressed in the current code.
+** DONE Conventional usage of cls in Python when describing static attibutes
+   DEADLINE: <2016-05-09 Mon>
+   CLOCK: [2016-05-09 Mon 18:45]--[2016-05-09 Mon 18:52] =>  0:07
+- Read here: http://stackoverflow.com/questions/7554738/python-self-no-self-and-cls
+- And here: http://stackoverflow.com/questions/141545/overloading-init-in-python
+** DONE Setup Emacs OnStartup to be leven-squash dev env
+   CLOCK: [2016-05-09 Mon 15:14]--[2016-05-09 Mon 15:32] =>  0:18
+- Takes too long to set up a python shell, terminal, project.org buffer, and test and src buffer every time I start up emacs.
+- Managed to slightly damage my config somehow in the process. Will fix on own time.
+** TODO Research general unit testing practice
+   CLOCK: [2016-05-09 Mon 20:30]--[2016-05-09 Mon 20:38] =>  0:08
+   CLOCK: [2016-05-09 Mon 19:48]--[2016-05-09 Mon 20:04] =>  0:16
+- Read here: https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
+** DONE Build tests for absolute Levenshtein algorithm package
+   DEADLINE: <2016-05-14 Sat>
+   CLOCK: [2016-05-14 Sat 16:13]--[2016-05-14 Sat 17:13] =>  1:00
+- It works
+** DONE Benchmark absolute Levenshtein.StringMatcher algorithm on large data sets
+   DEADLINE: <2016-05-14 Sat>
+   CLOCK: [2016-05-14 Sat 17:28]--[2016-05-14 Sat 18:01] =>  0:33
+- It's quite fast
+** TODO Produce LevenSquash module to package estimation
+   DEADLINE: <2016-05-14 Sat>
+   CLOCK: [2016-05-14 Sat 19:32]--[2016-05-14 Sat 19:53] =>  0:21
+   CLOCK: [2016-05-14 Sat 18:37]--[2016-05-14 Sat 19:06] =>  0:29
+   CLOCK: [2016-05-14 Sat 18:27]--[2016-05-14 Sat 18:34] =>  0:07
+** TODO Look into good logging practice with logging (a builtin python API)
+   CLOCK: [2016-05-14 Sat 19:07]--[2016-05-14 Sat 19:21] =>  0:14
+- This is a good resource: http://victorlin.me/posts/2012/08/26/good-logging-practice-in-python
+- Don't get logger at module level. Use logging.getLogger(name) to create on the fly. logging.getLogger() with arguments name1 and name2 returns a reference to the same object if name1 and name2 are equivalent strings.
+** 
+=======
+=======
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
 ** TODO Investigate proper polymorhphism practice in Python
    DEADLINE: <2016-05-09 Mon>
 - the need for this is mainly apparent right now in the testing modules, but it's obviously generally very important
 ** TODO Clean StringCompressorBasic
    DEADLINE: <2016-05-09 Mon>
 - There are various comments to be addressed in the current code
+<<<<<<< HEAD
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
+=======
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
 * Tasks [0/1]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
@@ -212,4 +311,37 @@ and should be preferred."
 
 ** TODO Run benchmark tests on hashlib constructors vs new()
    DEADLINE: <2016-04-30 Sat>
+<<<<<<< HEAD
+<<<<<<< HEAD
+* Notes
+** Python [0/0]
+*** Method object vs Function object
+#+begin_src python
+  class MyClass:
+      def f(self):
+          print("hello, world")
+
+  x = MyClass()
+  # the next two lines of code are equivalent
+  x.f()
+  MyClass.f(x)
+#+end_src
+
+*** Read Python Data Module doc page
+- https://docs.python.org/2/reference/datamodel.html
+** Development [0/3]
+*** TODO What is a good way to test the construction of a module in a test module?
+*** TODO Why is there an indexSet in the Java version of StringCompressorBasic
+*** TODO Is the Compressor module necessary?
+*** TODO What's the best way to write these unit tests when it comes to module type
+    DEADLINE: <2016-05-09 Mon>
+- should my test modules be static, i.e., singleton-like? Or no? The only reason they would be non-static would be if they aren't completely contained.
+*** TODO Unit testing in python 
+https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
+** Algorithm [0/0]
+=======
 ** TODO 
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
+=======
+** TODO 
+>>>>>>> 5b2bc16... Debug compression.py, add unit test
