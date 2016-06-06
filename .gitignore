@@ -1,3 +1,5 @@
 /#project.org#
 /.#project.org
 /levenshtein/#compression.py#
+/levenshtein/leven-squash.py~
+/tests/python_levenshtein_tests.py~
