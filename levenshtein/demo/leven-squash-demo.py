@@ -1,3 +1,0 @@
-# demo for base leven-squash module
-
-# ...

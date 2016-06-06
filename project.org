@@ -1,7 +1,7 @@
 * Structure 
 ** Base
 *** Hash
-* Log
+* Log [49/60]
   :PROPERTIES:
   :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
   :END:
@@ -166,16 +166,17 @@ Have four main properties:
 ** DONE Look back at compression heuristic C and N characteristics
    CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
 <<<<<<< HEAD
-** TODO Unit test StringCompressorBasic [0/1]
-   DEADLINE: <2016-05-03 Tue>
+** DONE Unit test StringCompressorBasic [0/1]
+   DEADLINE: <2016-06-04 Sat>
    CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
-- improve the test now that the compressor module is in at least working order
+- This was a learning experience for the nosetests python framework.
+- Improve the test now that the compressor module is in at least working order.
 *** TODO Write benchmark tests for StringCompressorBasic
-   DEADLINE: <2016-05-01 Sun>
+   DEADLINE: <2016-06-04 Sat>
    CLOCK: [2016-05-01 Sun 01:14]--[2016-05-01 Sun 01:51] =>  0:37
-
-** TODO Try to get Python shell working in emacs
+** DONE Try to get Python shell working in emacs
    CLOCK: [2016-05-03 Tue 13:47]--[2016-05-03 Tue 13:59] =>  0:12
+- Wasn't linking to file properly.
 ** DONE Range vs xrange in Python
    CLOCK: [2016-05-03 Tue 16:20]--[2016-05-03 Tue 16:26] =>  0:06
 - range generates a list conprised of the range, while xrange produces elements as needed, and so is space efficient if a loop is likely to exit abruptly.
@@ -198,50 +199,45 @@ Have four main properties:
 - Compressed output is for some reason a single character in length. Have to figure out this bug
 - concerned that python's dynamic handling of int/long sizes is a problem
 - Bug located: improper use of python's join method for sequences. There was a bit of misdirection around python's dynamic handling of primitive integer types
-** DONE Find large text strings for test data
-   CLOCK: [2016-05-09 Mon 00:11]--[2016-05-09 Mon 00:22] =>  0:11
-- created leven-squash/data directory with Gutenburg books as sample documents
-** DONE Troubleshoot nosetests bug
-   CLOCK: [2016-05-09 Mon 00:36]--[2016-05-09 Mon 00:44] =>  0:08
-- having trouble targeting a single module, probably a dumb mistake. 
-- was making an unfortunate syntatical mistake. Need to be careful with absolute paths
-- http://nose.readthedocs.io/en/latest/usage.html
-** DONE Look back at compression heuristic C and N characteristics
-   CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-** TODO Unit test StringCompressorBasic
-   DEADLINE: <2016-05-03 Tue>
-   CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
-- improve the test now that the compressor module is in at least working order
-** TODO Try to get Python shell working in emacs
-   CLOCK: [2016-05-03 Tue 13:47]--[2016-05-03 Tue 13:59] =>  0:12
-** DONE Range vs xrange in Python
-   CLOCK: [2016-05-03 Tue 16:20]--[2016-05-03 Tue 16:26] =>  0:06
-- range generates a list conprised of the range, while xrange produces elements as needed, and so is space efficient if a loop is likely to exit abruptly.
-** DONE Configure Python environment for emacs to support autocompletion and documentation
-   DEADLINE: <2016-05-03 Tue>
-   CLOCK: [2016-05-03 Tue 17:46]--[2016-05-03 Tue 18:08] =>  0:22
-- current python environment is okay, but there are some problems that are making it much more laborous than it should be: autocompletion and lack of easy documentation access.
-
-<<<<<<< HEAD
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-=======
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-+ enabled jedi-company in emacs config for autocompletion popups and documentation access.
 ** TODO Add Python project navigation functionality to emacs
-   DEADLINE: <2016-05-03 Tue>
+   DEADLINE: <2016-05-09 Mon>
    CLOCK: [2016-05-03 Tue 19:51]--[2016-05-03 Tue 20:11] =>  0:20
-- currently stuff definition lookup is confined to working file.
+- Currently definition lookup stuff is limited to working directory.
 ** DONE check join() 
    CLOCK: [2016-05-09 Mon 01:56]--[2016-05-09 Mon 02:03] =>  0:07
 - right, so I have been misusing python's join() function to devastating effect
 ** TODO Revise current test module for compression.py
-   DEADLINE: <2016-05-09 Mon>
-- clean the code
-- think of a way to improve the testing output
-<<<<<<< HEAD
-<<<<<<< HEAD
-- add benchmark
+   DEADLINE: <2016-06-04 Sat>
+- [X] Clean the code
+- [ ] Think of a way to improve the testing output
+- [ ] Add benchmark
+CLOCK: [2016-06-04 Sat 21:54]--[2016-06-04 Sat 22:35] =>  0:41
+- After reviewing a bit about inheritance with python tests, I created a base module for the compressor algorithm tests. 
+   CLOCK: [2016-06-04 Sat 21:08]--[2016-06-04 Sat 21:27] =>  0:19
+- Renamed test modules for compression.py to meet nosetests naming conventions.
+   CLOCK: [2016-06-04 Sat 20:29]--[2016-06-04 Sat 20:40] =>  0:11
+- The reason for bug (1) below is that the method was declared a classmethod. This is expected by nosetests (hence it being there), and it actually makes sense, so necessary adjustments were made.
+   CLOCK: [2016-06-04 Sat 19:07]--[2016-06-04 Sat 20:21] =>  1:14
+- Divided the current compression.py test module into two separate modules, one for the StringCompressor class and one for the StringCompressorBasic class.
+- Read up some more on nosetests concepts and usage.
+- Clarifying exactly python's object paradigm, which is kind of strange: http://stackoverflow.com/questions/625083/python-init-and-self-what-do-they-do
+- Current compression.py test modules had the Compressor modules to be tested as class variables, for some reason.
+- Handling two annoying bugs. 
+  1. One is the deceptive warning: 
+
+    File "/home/dwcoates/workspace/leven-squash/tests/compression_base_module_tests.py", line 18, in setup_class
+        self.sc.setN(n)
+    AttributeError: class TestCompression has no attribute 'sc'
+
+    Method in question:
+    #+begin_src python
+    def setup_class(self):
+          n = 6
+          print("Setting value of neighborhood size N to: " + str(n))
+          self.sc.setN(n)
+    #+end_src
+  2. The second is that I unfortunately named the project with a hyphen. This is against python naming conventions, and makes ~import~ statements very annoying.
+
 ** DONE Investigate class and instance variables in Python
    DEADLINE: <2016-05-09 Mon>
    CLOCK: [2016-05-09 Mon 16:12]--[2016-05-09 Mon 16:28] =>  0:16
@@ -252,8 +248,13 @@ Have four main properties:
 - reading this article: http://blog.thedigitalcatonline.com/blog/2014/08/21/python-3-oop-part-4-polymorphism/#.VzEKPFYrKkA 
 - 
 ** TODO Clean StringCompressorBasic
-   DEADLINE: <2016-05-09 Mon>
-- There are various comments to be addressed in the current code.
+   DEADLINE: <2016-06-04 Sat>
+   CLOCK: [2016-06-05 Sun 00:04]--[2016-06-05 Sun 00:54] =>  0:50
+   CLOCK: [2016-06-04 Sat 19:09]--[2016-06-04 Sat 19:17] =>  0:08
+- There are various comments to be addressed in the current code. These include things like proper exception handling and logging.
+- Separated base Compressor from concrete Compressors, which live in their own file. 
+- Add proper exception handling
+- Add proper logging
 ** DONE Conventional usage of cls in Python when describing static attibutes
    DEADLINE: <2016-05-09 Mon>
    CLOCK: [2016-05-09 Mon 18:45]--[2016-05-09 Mon 18:52] =>  0:07
@@ -263,7 +264,7 @@ Have four main properties:
    CLOCK: [2016-05-09 Mon 15:14]--[2016-05-09 Mon 15:32] =>  0:18
 - Takes too long to set up a python shell, terminal, project.org buffer, and test and src buffer every time I start up emacs.
 - Managed to slightly damage my config somehow in the process. Will fix on own time.
-** TODO Research general unit testing practice
+** DONE Research general unit testing practice
    CLOCK: [2016-05-09 Mon 20:30]--[2016-05-09 Mon 20:38] =>  0:08
    CLOCK: [2016-05-09 Mon 19:48]--[2016-05-09 Mon 20:04] =>  0:16
 - Read here: https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
@@ -275,30 +276,107 @@ Have four main properties:
    DEADLINE: <2016-05-14 Sat>
    CLOCK: [2016-05-14 Sat 17:28]--[2016-05-14 Sat 18:01] =>  0:33
 - It's quite fast
-** TODO Produce LevenSquash module to package estimation
+** DONE Produce LevenSquash module to package estimation
    DEADLINE: <2016-05-14 Sat>
+   CLOCK: [2016-05-15 Sun 20:43]--[2016-05-15 Sun 21:27] =>  0:44
    CLOCK: [2016-05-14 Sat 19:32]--[2016-05-14 Sat 19:53] =>  0:21
    CLOCK: [2016-05-14 Sat 18:37]--[2016-05-14 Sat 19:06] =>  0:29
    CLOCK: [2016-05-14 Sat 18:27]--[2016-05-14 Sat 18:34] =>  0:07
-** TODO Look into good logging practice with logging (a builtin python API)
+- This wraps the components into a minimalist working implementation of the process.
+** DONE Look into good logging practice with logging (a builtin python API)
    CLOCK: [2016-05-14 Sat 19:07]--[2016-05-14 Sat 19:21] =>  0:14
 - This is a good resource: http://victorlin.me/posts/2012/08/26/good-logging-practice-in-python
 - Don't get logger at module level. Use logging.getLogger(name) to create on the fly. logging.getLogger() with arguments name1 and name2 returns a reference to the same object if name1 and name2 are equivalent strings.
-** 
-=======
-=======
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-** TODO Investigate proper polymorhphism practice in Python
-   DEADLINE: <2016-05-09 Mon>
-- the need for this is mainly apparent right now in the testing modules, but it's obviously generally very important
-** TODO Clean StringCompressorBasic
-   DEADLINE: <2016-05-09 Mon>
-- There are various comments to be addressed in the current code
-<<<<<<< HEAD
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-=======
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-* Tasks [0/1]
+** TODO LevenSquash should log the LD algorithm's complete package name
+   SCHEDULED: <2016-06-05 Sun> DEADLINE: <2016-06-06 Mon>
+- If there is time on Sunday, 6/5, do this.
+Current code:
+#+begin_src python
+logger.info('Levenshtein distance algorithm in use: ' + str(self.distAlg.__name__))
+#+end_src
+outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
+** TODO Consider the advantage to using a rolling hash compression algorithm for efficiency
+   DEADLINE: <2016-06-06 Mon>
+- This is something to mention on the Monday, 6/6 meeting
+** DONE Correct some design issues in compression.py
+   DEADLINE: <2016-06-04 Sat>
+- StringCompressorBasic should have only one compress function and it should be confined to class instances. 
+  In other words, no static compress function that allows for variable n's and c's
+- Compress should exist as an abstract function in ACompressor.
+   CLOCK: [2016-06-04 Sat 18:20]--[2016-06-04 Sat 18:49] =>  0:29
+- Corrected some problems with the way the accumulator in StringCompressorBasic.compress()
+   CLOCK: [2016-05-17 Tue 00:23]--[2016-05-17 Tue 00:50] =>  0:27
+** DONE Debug Emacs Python development environment
+   CLOCK: [2016-06-03 Fri 20:13]--[2016-06-03 Fri 20:56] =>  0:43
+*** DONE There is an error loading elpy
+- The error was an attempt to access elpy variables before elpy was loaded caused by accidentally using :init key instead of :config key in the use-package call.
+*** DONE There is an error with one of the dev frames on startup
+- The problem was with that eshell, the emacs shell emulator, after loading (which is initialized on startup as part of dev environment) makes an improper call to set-local-key.
+** TODO Read Google paper 'Detecting Near-Duplicates for Web Crawling'
+   DEADLINE: <2016-06-06 Mon>
+   CLOCK: [2016-06-03 Fri 21:32]--[2016-06-03 Fri 21:37] =>  0:05
+   CLOCK: [2016-06-03 Fri 20:56]--[2016-06-03 Fri 21:04] =>  0:08
+- Read on train ride to meeting, 6/6.
+- Can be found here: http://www2007.cpsc.ucalgary.ca/papers/paper215.pdf. Locally, [[file:meta/DetectingNearDuplicatesForWebCrawling.pdf][here]].
+- Contributes to understanding of possible applications and to current state-of-the art approaches to similar problems. Additionally, to understanding of underlying and related concepts.
+** DONE Research shingling
+** DONE Update proposal first draft for first meeting with Prof Augenstein
+   CLOCK: [2016-06-03 Fri 22:44]--[2016-06-03 Fri 22:49] =>  0:05
+   CLOCK: [2016-06-03 Fri 22:06]--[2016-06-03 Fri 22:43] =>  0:37
+- This involved some consideration about whether to implement a plaigarism detector as part of the project. I've decided that, while interesting, it's too tangential and likely to detract from the rest of the project.
+** TODO Read about entropy
+   DEADLINE: <2016-06-06 Mon>
+   CLOCK: [2016-06-04 Sat 00:21]--[2016-06-04 Sat 00:43] =>  0:22
+   CLOCK: [2016-06-04 Sat 00:07]--[2016-06-04 Sat 00:11] =>  0:04
+   CLOCK: [2016-06-03 Fri 23:10]--[2016-06-03 Fri 23:43] =>  0:33
+- This stackoverflow entry is a good starting point: http://stackoverflow.com/questions/510412/what-is-the-computer-science-definition-of-entropy
+- Wiki: https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem
+*** DONE Probability mass/density function
+    CLOCK: [2016-06-04 Sat 00:11]--[2016-06-04 Sat 00:21] =>  0:10
+- Reading from wiki: https://en.wikipedia.org/wiki/Probability_mass_function
+- Normal distributions are cool
+*** TODO Shannon's source coding theorem
+    DEADLINE: <2016-06-06 Mon>
+    CLOCK: [2016-06-03 Fri 23:43]--[2016-06-03 Fri 23:53] =>  0:10
+- Read wiki here: https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem
+- This will need to be readdressed after food/sleep.
+- 
+** TODO Read more about nosetests
+   CLOCK: [2016-06-04 Sat 20:40]--[2016-06-04 Sat 21:07] =>  0:27
+- Need some clarification on why setup_class needs to be a classmethod
+** DONE Plan schedule for rest of weekend
+   CLOCK: [2016-06-04 Sat 17:56]--[2016-06-04 Sat 18:20] =>  0:24
+   CLOCK: [2016-06-04 Sat 16:56]--[2016-06-04 Sat 17:27] =>  0:31
+- This is mostly detailed in Task entry '[[By Monday, 6/6]]'
+- Also includes updating scheduling for incomplete past log entries and todo's.
+** DONE Investigate the usage of inheritance in unit testing
+   CLOCK: [2016-06-04 Sat 21:27]--[2016-06-04 Sat 21:47] =>  0:20
+- Seems to naturally create lots of redundant garbage. 
+- Reading here: http://www.petrikainulainen.net/programming/unit-testing/3-reasons-why-we-should-not-use-inheritance-in-our-tests/
+- And here: http://erikzaadi.com/2012/09/13/inheritance-within-python-unit-tests/
+** DONE Reading about python module style
+   CLOCK: [2016-06-04 Sat 23:23]--[2016-06-04 Sat 23:46] =>  0:23
+- As it pertains to how many classes one might have in a module, organization of modules, etc. In other words, how python treats modules vs. packages vs. classes
+** TODO Abstract base classes and virtual methods in Python
+   CLOCK: [2016-06-05 Sun 19:50]--[2016-06-05 Sun 20:13] =>  0:23
+   CLOCK: [2016-06-04 Sat 23:46]--[2016-06-05 Sun 00:04] =>  0:18
+- Turns out that abstract base classes are relatively newly added to the standard and pretty hacky. All methods in python are "virtual", but unlike java, 
+** DONE Considering project design
+   CLOCK: [2016-06-05 Sun 19:09]--[2016-06-05 Sun 19:50] =>  0:41
+- Will have a script that accepts two file names, compression type, LD algorithm, and returns a computed distance. Demo's will be built on top of this that may assess the qualities of the process. 
+- Demo directory can live in ./leven-squash/levenshtein/. It is will live the demos as well as the sample data for testing. 
+- ./leven-squah/levenshtein/ will consist of data/, compression.py, distance.py, and main.py and perhaps a utilities directory containing modules for evaluating the algorithm.
+
+** DONE Phone call discussing project ideas
+   CLOCK: [2016-06-05 Sun 19:54]--[2016-06-05 Sun 20:13] =>  0:19
+- Discussion about compression algorithms, project design, logging practice, and testing practice. 
+** TODO Finishing organization of project
+   CLOCK: [2016-06-05 Sun 20:15]
+- This includes making utility directory, moving mock data directory to the demo directory, consolidating ACompressor and other compressors into a single file, updating test import statements to reflect these changes, and then pushing to github. 
+- Also, python convention says to not have hyphens in the name, so this needs to be corrected. It actually has some sorta program-breaking effects with importing.
+*** TODO Remove this file (project.org) from github, create a simlink, and add that to a git repo on my ec2 machine (for privacy).
+** TODO 
+* Tasks [0/3]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
 "A generic new() constructor that takes the string name of the desired
@@ -313,8 +391,26 @@ and should be preferred."
    DEADLINE: <2016-04-30 Sat>
 <<<<<<< HEAD
 <<<<<<< HEAD
-* Notes
-** Python [0/0]
+** TODO Determine how to display paper
+   DEADLINE: <2016-06-04 Sat>
+- Either it is displayed as a classic LaTeX paper, or it's in a website (possibly with latex components?) accompanied by demonstration applets (JavaScript?). I prefer the latter option, but question how feasible it is.
+** By Monday, 6/6
+   DEADLINE: <2016-06-05 Sun>
+- [[Modularize hashing algorithm]]
+- [[Write tests for low entropy, high entropy]] [0/2]
+  - [ ] Read about entropy
+  - [ ] Design tests
+*** TODO Finish proposal [0/1]
+- [ ] Email Augenstein asking about how to display paper?
+** TODO How are abstract base classes done properly?
+   DEADLINE: <2016-06-06 Mon>
+- what does one do in python when one wants an abstract base class?
+** TODO Browsing commerical Python source code
+   CLOCK: [2016-06-05 Sun 01:28]--[2016-06-05 Sun 02:12] =>  0:44
+- Interestingly, this substantially sized project has no traces of logging usage: https://github.com/pybuilder/pybuilder.
+- Reading about loggers on this documentation page after browsing the source on github: http://doc.scrapy.org/en/latest/topics/logging.html.
+* Notes and Questions
+** Python [0/1]
 *** Method object vs Function object
 #+begin_src python
   class MyClass:
@@ -329,6 +425,20 @@ and should be preferred."
 
 *** Read Python Data Module doc page
 - https://docs.python.org/2/reference/datamodel.html
+*** TODO Logging a callbacks origins
+In this code I try to log the details on a callback that's being returned for computing the LD distance
+#+begin_src python
+def get_distance(self):
+        distAlg = StringMatcher.distance
+        logger.info('Levenshtein distance algorithm in use: ' + )
+        return distAlg
+#+end_src
+What is the correct way for returning the information I'd like? That is, the originating module and class of this method.
+
+*** Testing
+*** Logging
+**** Logging adapters
+- Documentation here: https://docs.python.org/2/howto/logging-cookbook.html#context-info
 ** Development [0/3]
 *** TODO What is a good way to test the construction of a module in a test module?
 *** TODO Why is there an indexSet in the Java version of StringCompressorBasic
@@ -338,10 +448,43 @@ and should be preferred."
 - should my test modules be static, i.e., singleton-like? Or no? The only reason they would be non-static would be if they aren't completely contained.
 *** TODO Unit testing in python 
 https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
-** Algorithm [0/0]
+** Problem [0/0]
 =======
-** TODO 
->>>>>>> 5b2bc16... Debug compression.py, add unit test
-=======
-** TODO 
->>>>>>> 5b2bc16... Debug compression.py, add unit test
+** Underlying Concepts
+*** Near-Duplication
+**** A Stanford paper on near-duplication w/ shingling
+- http://nlp.stanford.edu/IR-book/html/htmledition/near-duplicates-and-shingling-1.html
+**** Jaccard coefficient
+- measure of the similarity of two sets
+- the ratio of their intersection and their union
+*** Entropy
+- A measure of the unpredictability of information content
+- Nice stackoverflow answer: http://stackoverflow.com/questions/510412/what-is-the-computer-science-definition-of-entropy
+
+** Questions
+*** What is the StringCompressorBasic PRINT_DIAGNOSTIC about?
+*** Should user warnings be logged?
+* Meetings
+** Meeting 1
+** Meeting 2
+   CLOCK: [2016-05-17 Tue 13:20]--[2016-05-17 Tue 13:45] =>  0:25
+*** What happens to relative length of signatures for non-similarly lengthed strings?
+*** Complexity
+((l1/l2)/c^2)
+*** Assignment
+**** Play around with hashes
+**** Explicit O(n) dependence on C and the hash
+**** Unit tests
+**** Explore possible optimizations
+- for example, a rolling hash
+** Meeting 3
+   CLOCK: [2016-06-01 Wed 11:02]--[2016-06-01 Wed 2:02] =>  2:58
+- discussed details of objectives of project for the purpose of finilizing the proposal
+- decided that the idea of implementing a plagiarism detector is nice in lieu of a graphical interface for variably displaying the effects of the process (its entropy, perhaps as its affected by varying the properties of the compression process, n and c, or the levenshtein distance algorithm used). It is possible that the aforementioned graphical display program would not be interesting due to a minimal effect of those variables on entropy. Because this is an effect yet to be determined (as a task of this project), this is necessarily an open-ended goal.
+*** Assignments
+**** TODO Modularize hashing algorithm
+     DEADLINE: <2016-06-05 Sun>
+**** TODO Write tests for low entropy, high entropy
+     DEADLINE: <2016-06-05 Sun>
+
+
