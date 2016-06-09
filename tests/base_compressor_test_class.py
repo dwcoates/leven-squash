@@ -1,22 +1,27 @@
-import sys
+#from levenshtein.config.logging import LoggerManager
+import logging
 
-# this is mostly just practice for using nose and python
+
 class BaseCompressorTestClass:
     """
-    Base test class for Compressor classes.
+    Base test class for Compressor test classes.
     """
 
     __test__ = False
+
+    logger = logging.getLogger()
+    #logger = LoggerManager.get_logger()
+
+    Compressor = None
 
     setup_method_msg = "Calling a Compressor test method."
     teardown_method_msg = "Tearing down a Compressor test method."
     setup_class_msg = "Setting up a Compressor test class."
     teardown_class_msg = "Tearing down Compressor test class."
 
-    sc = None
-    filename = "/home/dwcoates/workspace/leven-squash/data/10001.txt"
+    filename = "/home/dwcoates/workspace/leven-squash/levenshtein/demo/data/10001.txt"
     finput = ''
-    with open(self.filename, 'r') as f:
+    with open(filename, 'r') as f:
         finput = f.read()
 
     def shortDescription(self):
@@ -45,9 +50,28 @@ class BaseCompressorTestClass:
 
     def setup(self):
         print(self.setup_method_msg)
-        print("Compression factor: " + str(self.sc.getC()))
-        print("Neighborhood size: " + str(self.sc.getN()))
-        print("Location of data to be compressed: " + self.filename)
 
     def teardown(self):
         print(self.teardown_method_msg)
+
+    def test_compression_signature_size(self, n, c):
+        raise NotImplementedError()
+
+    @classmethod
+    def _test_compression_signature_size(cls, fname, c, n):
+        sc = cls.Compressor()
+        string = ''
+        try:
+            with open(fname, 'r') as file:
+                string = file.read()
+        except IOError:
+            cls.logger.error("Failed to read file %s.", fname)
+
+        signature = sc.compress(string)
+        sig_length = len(signature)
+        sig_expected_length = len(string)/c
+
+        ratio = sig_length/sig_expected_length
+        error = abs(sig_length-sig_exected_length)/sig_expected_length
+
+        #produce error messages

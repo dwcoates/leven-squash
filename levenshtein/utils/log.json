@@ -1,0 +1,63 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "basic": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "basic",
+            "stream": "ext://sys.stdout"
+        },
+
+        "info_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "basic",
+            "filename": "info.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        },
+
+        "error_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "basic",
+            "filename": "errors.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        }
+    },
+
+    "loggers": {
+        "compression": {
+            "level": "ERROR",
+            "handlers": ["info_file_handler"],
+            "propagate": "no"
+        },
+
+        "distance": {
+            "level": "ERROR",
+            "handlers": ["info_file_handler"],
+            "propagate": "no"
+        },
+
+        "leven_squash": {
+            "level": "ERROR",
+            "handlers": ["info_file_handler"],
+            "propagate": "no"
+        }
+    },
+
+    "root": {
+        "level": "INFO",
+        "handlers": ["console", "info_file_handler", "error_file_handler"]
+    }
+}
