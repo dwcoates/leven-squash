@@ -20,7 +20,7 @@ def leven_squash(sc, dist_alg, str1, str2):
     and default LD algorithm is StringMatcher.distance"""
     logger.info("Determining similarity of two string signatures...")
     if dist_alg is None:
-        dist_alg = distance.AbsoluteLD
+        dist_alg = distance.AbsoluteLD.distance
     logger.info("Configured leven-squash with %s LD algorithm.",
                 dist_alg.__name__)
 
@@ -48,7 +48,8 @@ def leven_squash(sc, dist_alg, str1, str2):
     except:
         raise
     else:
-        logger.info("Signature distance computed using %s LD algorithm", type(dist_alg).__name__)
+        logger.info("Signature distance computed using %s LD algorithm",
+                    type(dist_alg).__name__)
 
     logger.info("Distance computed.")
 

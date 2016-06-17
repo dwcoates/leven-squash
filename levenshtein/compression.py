@@ -1,8 +1,9 @@
 import logging
 
+from utils import alphabet
 
 class ACompressor:
-    chars = "qrZ126stucRSTHfgmnoPQJKLIdeM345UVhvwxDEFGWXY7ij890NOakyzABClbp"
+    _chars = alphabet.ALPHABET_BASIC
 
     def __init__(self):
         self.N = 0
@@ -19,6 +20,16 @@ class ACompressor:
         # There should probably be getters and setters to check for positivity
         # of C and N. Zero value C will throw a division-by-zero error and
         # non-positive N will result in infinite loop.
+
+    def get_chars(self):
+        return self._chars
+
+    def set_chars(self, chars):
+        if len(chars) >= 0:
+            self._chars = chars
+        else:
+            raise ValueError("Character alphabet for compression scheme " +
+                             "must be non-zero in length")
 
     def compress(self, string):
         if self.C <= 0 or self.N <= 0:
@@ -53,6 +64,7 @@ class StringCompressorBasic (ACompressor):
             # neighborhood, XOR in the element at a fresh 8-bit position. Wrap around and
             # keep going if N is long enough to exhaust the 64 bits in a long.
             for i in range(0, self.N):
+
                 val = ord(string[strPos+i])
                 # val<<=i*8%64
                 val <<= i*8 % 56

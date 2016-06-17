@@ -9,7 +9,7 @@ class LDAlgorithm:
 class AbsoluteLD(LDAlgorithm):
     """Simple wrapper class for encapsulating the
     Levenshtein.StringMatcher.distance LD algorithm."""
-    @staticmethod
     def distance(self, str1, str2):
-        return StringMatcher.distance(str1, str2)
+        sm = StringMatcher(None, str1, str2)
 
+        return sm.distance()
