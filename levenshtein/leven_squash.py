@@ -2,6 +2,7 @@ import logging.Logger
 
 import distance
 import compression
+from file import normalize_from_file
 
 
 logging.basicConfig(level=logging.INFO)
@@ -14,43 +15,76 @@ if __name__ == '__main__':
 logger = logging.getLogger(__name__)
 
 
-def leven_squash(sc, dist_alg, str1, str2):
-    """Accepts a string compressor, LD algorithm, and two strings,
-    returning the leven_squash Default compressor is StringCompressorBasic,
-    and default LD algorithm is StringMatcher.distance"""
-    logger.info("Determining similarity of two string signatures...")
-    if dist_alg is None:
-        dist_alg = distance.AbsoluteLD.distance
-    logger.info("Configured leven-squash with %s LD algorithm.",
-                dist_alg.__name__)
-
-    if sc is None:
+class LevenSquash:
+    def __init__(self, compressor, dist_alg):
         # Default compression scheme. Note that this compresses by a factor of
         # 100, so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
-        sc = compression.StringCompressorBasic()
-        sc.C = 100
-        sc.N = 5
-    logger.info("Configured leven-squash with %s compression scheme.",
-                sc.__name__)
+        if compressor is None:
+            self._sc = compression.StringCompressorBasic()
+            self._sc.setC(150)
+            self._sc.setN(8)
+        else:
+            self._sc = compressor
+        logger.info("Configured leven-squash with %s LD algorithm.",
+                    self._dist_alg.__name__)
 
-    sig1 = sc.compress(str1)
-    sig2 = sc.compress(str2)
+        # Default distance calculation alasgorithm is the standard algorithm
+        # in n*m time and max(n,m) space complexity
+        if dist_alg is None:
+            self.dist_alg = distance.AbsoluteLD.distance
+        else:
+            self._dist_alg = dist_alg
+        logger.info("Configured leven-squash with %s compression scheme.",
+                    self._sc.__name__)
 
-    logger.info('Computing signature distance...')
-    try:
-        squash_dist = dist_alg.distance(sig1, sig2)
-    except AttributeError as ae:
-        warning = "%s%s%s" % ("Invalid distance algorithm, %s, of type %s",
-                              dist_alg.__name__,
-                              type(dist_alg).__name__)
-        raise TypeError(warning)
-    except:
-        raise
-    else:
-        logger.info("Signature distance computed using %s LD algorithm",
-                    type(dist_alg).__name__)
+    def get_compressor(self):
+        return self._sc
 
-    logger.info("Distance computed.")
+    def get_ld_alg(self):
+        return self._dist_alg
 
-    return squash_dist
+    def set_compressor(self, compressor):
+        self._sc = compressor
+
+    def set_ld_alg(self, dist_alg):
+        self._dist_alg = dist_alg
+
+    def estimate(self, str1, str2):
+        """
+        Accepts two strings, returning their leven-squash signature distance.
+        """
+        logger.info("Determining distance of two string signatures...")
+
+        str1 = normalize_from_file(str1)
+        str2 = normalize_from_file(str2)
+
+        sig1 = self._sc.compress(str1)
+        sig2 = self._sc.compress(str2)
+        logger.info('Computing signature distance...')
+        try:
+            squash_dist = self._dist_alg.distance(sig1, sig2)
+        except AttributeError:
+            warning = "%s%s%s" % ("Invalid distance algorithm, %s, of type %s",
+                                  self._dist_alg.__name__,
+                                  type(self._dist_alg).__name__)
+            raise TypeError(warning)
+        except:
+            raise
+        else:
+            logger.info("Signature distance computed using %s LD algorithm",
+                        type(self._dist_alg).__name__)
+
+        logger.info("Distance computed.")
+        return squash_dist
+
+    def calculate(self, str1, str2):
+        """
+        Return LD distance calcuation between str1 and str2. This is a
+        distance computation using the underlying leven-squash LD calculation
+        algorithm, and not the leven-squash estimation process.
+        """
+        str1 = normalize_from_file(str1)
+        str2 = normalize_from_file(str2)
+
+        return self._dist_alg(str1, str2)
