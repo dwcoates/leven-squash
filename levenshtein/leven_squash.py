@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class LevenSquash:
     def __init__(self, compressor=None, dist_alg=None):
-        # Default compression scheme.Note that this has a fairly large C,
+        # Default compression scheme. Note that this has a fairly large C,
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
         if compressor is None:
