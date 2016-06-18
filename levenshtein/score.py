@@ -56,4 +56,3 @@ class ScoreDistance:
         estimatedUnadjusted = computedLenRatioPlain
         return self.fudgeFactor(estimatedUnadjusted)
 
-

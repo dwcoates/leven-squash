@@ -2,6 +2,7 @@
 
 from levenshtein import leven_squash
 from levenshtein.utils import stringer
+from Levenshtein import distance
 
 str_len = 1
 num_iters = 200000
@@ -11,8 +12,9 @@ ls = leven_squash.LevenSquash()
 
 print("Calculating...")
 for i in range(num_iters):
-    #est = ls.calculate(r(str_len), r(str_len))
-    est = 1 - int(r(str_len) == r(str_len))
+    est = ls.calculate(r(str_len), r(str_len))
+    #est = 1 - int(r(str_len) == r(str_len))
+    #est = distance(r(str_len), r(str_len))
     sum += est
 calc_diff = abs(1 - sum / float(str_len*num_iters))
 
