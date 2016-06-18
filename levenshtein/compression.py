@@ -1,13 +1,14 @@
 import logging
 
-from utils import alphabet
+from levenshtein.utils import alphabet
+
 
 class ACompressor:
     _chars = alphabet.ALPHABET_BASIC
 
-    def __init__(self):
-        self.N = 0
-        self.C = 0
+    def __init__(self, C=150, N=8):
+        self.N = C
+        self.C = N
 
         self.logger = logging.getLogger(__name__)
 
@@ -21,10 +22,22 @@ class ACompressor:
         # of C and N. Zero value C will throw a division-by-zero error and
         # non-positive N will result in infinite loop.
 
-    def get_chars(self):
+    def setC(self, c):
+        self.C = c
+
+    def setN(self, n):
+        self.N = n
+
+    def getC(self, c):
+        return self.C
+
+    def getN(self, n):
+        return self.N
+
+    def get_alphabet(self):
         return self._chars
 
-    def set_chars(self, chars):
+    def set_alphabet(self, chars):
         if len(chars) >= 0:
             self._chars = chars
         else:
@@ -41,7 +54,7 @@ class ACompressor:
                                 '.compress(string) has received an empty string to compress.')
             self.logger.warning(warning)
 
-        self._compress(string)
+        return self._compress(string)
 
     def _compress(self, string):
         raise NotImplementedError("ACompressor does not implement a compression algorithm.")
@@ -52,7 +65,7 @@ class StringCompressorBasic (ACompressor):
     # log = Logger.getLogger(StringCompressorBasic)
 
     # TODO Revisit this. It looks correct, but it takes n steps at each position.
-    def compress(self, string):
+    def _compress(self, string):
         retstr = ''   # should this be over-allocated? Probably doesn't matter.
         strPos = 0
         strLen = len(string)
@@ -71,8 +84,8 @@ class StringCompressorBasic (ACompressor):
                 acc ^= val
                 acc = abs(acc)
             if acc % self.C == 0:
-                indx = acc % len(StringCompressorBasic.chars)
-                outChar = StringCompressorBasic.chars[indx]
+                indx = acc % len(self.get_alphabet())
+                outChar = self.get_alphabet()[indx]
                 retstr += outChar
             strPos = strPos+1
         return retstr
