@@ -11,6 +11,11 @@ import numpy as np
 # and instead is done by some stochastic process.
 class Entropy:
     def calculate(self, string):
+        probs = Entropy.char_distribution(string).values()
+
+        return self.get_entropy(probs)
+
+    def get_entropy(self, distr):
         raise NotImplementedError()
 
     @staticmethod
@@ -34,14 +39,12 @@ class Entropy:
 
 
 class ShannonBasic(Entropy):
-    def calculate(self, string):
+    def get_entropy(self, distr):
         """
         Estimate the entropy of string in Shannons. That is, this method assumes that the frequency of characters in the input string is exactly equal to the probability mass function.
         """
-        probs = Entropy.char_distribution(string).values()
-
         # calculates entropy in Nats
-        ent_nat = entropy(probs)
+        ent_nat = entropy(distr)
 
         # convert to Shannons
         ent_shan = ent_nat * 1/np.log(2)
