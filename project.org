@@ -1,7 +1,7 @@
 * Structure 
 ** Base
 *** Hash
-* Log [85/99]
+* Log [85/100]
   :properties:
   :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
   :END:
@@ -636,10 +636,9 @@ exp_ent = ent.get_entropy(distr.values())
 print("calculated entropy: " + str(calc_ent) +
       "expected entropy: " + str(exp_ent))
 #+end_src
-** Write test for random_string()
+** TODO Write test for random_string()
    CLOCK: [2016-06-18 Sat 00:44]--[2016-06-18 Sat 01:11] =>  0:27
 - Have to sanity check that it's doing it's job uniformily
-
 
 ** DONE Some convenience functions needing implementation
 1. a function that gets the LD between two strings.
@@ -654,10 +653,11 @@ print("calculated entropy: " + str(calc_ent) +
 - Re-packaged compression had some bugs. Notable, the new alphabet scheme wasn't properly integrated, and compress() wasn't returning _compress().
 
 ** DONE Tidy git repository
-   CLOCK: [2016-06-18 Sat 02:23]
+   CLOCK: [2016-06-18 Sat 02:23]--[2016-06-18 Sat 02:37] =>  0:14
    CLOCK: [2016-06-18 Sat 01:53]--[2016-06-18 Sat 02:14] =>  0:21
 - There a bunch of commits to be made
 - Also some garbage in the repository
+** TODO Remove normalize
 * Tasks [3/6]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
@@ -697,6 +697,9 @@ and should be preferred."
 ** Markov Chain to estimate entropy for English text
 ** Dodge/Alisa similiarity metric
 * Notes and Questions
+** misc
+leetcode for algorithms
+opencv
 ** Python [0/1]
 *** Method object vs Function object
 #+begin_src python
@@ -800,6 +803,6 @@ bits of the hash on the neighborhood.
 ***** plug in approximation algorithms
 ***** try different hashing algorithms. Maybe crc. Get some tests for seeing which ones are most efficient.
   - Need to use a levenshtein computation that doesnt take up a lot of memory
-** Meet ing 6
+** Meeting 6
    DEADLINE: <2016-06-17 Fri>
 
