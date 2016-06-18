@@ -8,3 +8,7 @@
 /errors.log
 /info.log
 /levenshtein/demo/demo1.py
+/levenshtein/utils/.#filer.py
+/levenshtein/utils/.#log.json
+/levenshtein/utils/.#random_strings.py
+levenshtein/compression.pyc

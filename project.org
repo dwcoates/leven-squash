@@ -1,8 +1,8 @@
 * Structure 
 ** Base
 *** Hash
-* Log [49/60]
-  :PROPERTIES:
+* Log [85/99]
+  :properties:
   :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
   :END:
 ** DONE Research Python organization 
@@ -166,12 +166,12 @@ Have four main properties:
 ** DONE Look back at compression heuristic C and N characteristics
    CLOCK: [2016-05-09 Mon 01:13]--[2016-05-09 Mon 01:27] =>  0:14
 <<<<<<< HEAD
-** DONE Unit test StringCompressorBasic [0/1]
+** DONE Unit test StringCompressorBasic [1/1]
    DEADLINE: <2016-06-04 Sat>
    CLOCK: [2016-05-09 Mon 02:56]--[2016-05-09 Mon 03:57] =>  1:01
 - This was a learning experience for the nosetests python framework.
 - Improve the test now that the compressor module is in at least working order.
-*** TODO Write benchmark tests for StringCompressorBasic
+*** DONE Write benchmark tests for StringCompressorBasic
    DEADLINE: <2016-06-04 Sat>
    CLOCK: [2016-05-01 Sun 01:14]--[2016-05-01 Sun 01:51] =>  0:37
 ** DONE Try to get Python shell working in emacs
@@ -199,10 +199,11 @@ Have four main properties:
 - Compressed output is for some reason a single character in length. Have to figure out this bug
 - concerned that python's dynamic handling of int/long sizes is a problem
 - Bug located: improper use of python's join method for sequences. There was a bit of misdirection around python's dynamic handling of primitive integer types
-** TODO Add Python project navigation functionality to emacs
+** DONE Add Python project navigation functionality to emacs
    DEADLINE: <2016-05-09 Mon>
    CLOCK: [2016-05-03 Tue 19:51]--[2016-05-03 Tue 20:11] =>  0:20
 - Currently definition lookup stuff is limited to working directory.
+- Implemented now. Mostly. The Rope backend is not without its faults, but what can you do? I simply can't get Jedi to play nice with emacs (I spent a lot of unlogged time on this).
 ** DONE check join() 
    CLOCK: [2016-05-09 Mon 01:56]--[2016-05-09 Mon 02:03] =>  0:07
 - right, so I have been misusing python's join() function to devastating effect
@@ -210,8 +211,10 @@ Have four main properties:
    DEADLINE: <2016-06-04 Sat>
 - [X] Clean the code
 - [ ] Think of a way to improve the testing output
-- [ ] Add benchmark
-CLOCK: [2016-06-04 Sat 21:54]--[2016-06-04 Sat 22:35] =>  0:41
+   CLOCK: [2016-06-07 Tue 00:07]--[2016-06-07 Tue 00:46] =>  0:39
+   CLOCK: [2016-06-05 Sun 20:49]--[2016-06-05 Sun 21:06] =>  0:17
+- Some changes.
+   CLOCK: [2016-06-04 Sat 21:54]--[2016-06-04 Sat 22:35] =>  0:41
 - After reviewing a bit about inheritance with python tests, I created a base module for the compressor algorithm tests. 
    CLOCK: [2016-06-04 Sat 21:08]--[2016-06-04 Sat 21:27] =>  0:19
 - Renamed test modules for compression.py to meet nosetests naming conventions.
@@ -247,14 +250,12 @@ CLOCK: [2016-06-04 Sat 21:54]--[2016-06-04 Sat 22:35] =>  0:41
 - The need for this is mainly apparent right now in the testing modules, but it's obviously generally very important
 - reading this article: http://blog.thedigitalcatonline.com/blog/2014/08/21/python-3-oop-part-4-polymorphism/#.VzEKPFYrKkA 
 - 
-** TODO Clean StringCompressorBasic
+** DONE Clean StringCompressorBasic
    DEADLINE: <2016-06-04 Sat>
    CLOCK: [2016-06-05 Sun 00:04]--[2016-06-05 Sun 00:54] =>  0:50
    CLOCK: [2016-06-04 Sat 19:09]--[2016-06-04 Sat 19:17] =>  0:08
-- There are various comments to be addressed in the current code. These include things like proper exception handling and logging.
+- There are various comments to be addressed in the current code. 
 - Separated base Compressor from concrete Compressors, which live in their own file. 
-- Add proper exception handling
-- Add proper logging
 ** DONE Conventional usage of cls in Python when describing static attibutes
    DEADLINE: <2016-05-09 Mon>
    CLOCK: [2016-05-09 Mon 18:45]--[2016-05-09 Mon 18:52] =>  0:07
@@ -287,16 +288,18 @@ CLOCK: [2016-06-04 Sat 21:54]--[2016-06-04 Sat 22:35] =>  0:41
    CLOCK: [2016-05-14 Sat 19:07]--[2016-05-14 Sat 19:21] =>  0:14
 - This is a good resource: http://victorlin.me/posts/2012/08/26/good-logging-practice-in-python
 - Don't get logger at module level. Use logging.getLogger(name) to create on the fly. logging.getLogger() with arguments name1 and name2 returns a reference to the same object if name1 and name2 are equivalent strings.
-** TODO LevenSquash should log the LD algorithm's complete package name
+** DONE LevenSquash should log the LD algorithm's complete package name
    SCHEDULED: <2016-06-05 Sun> DEADLINE: <2016-06-06 Mon>
+   CLOCK: [2016-06-06 Mon 22:56]--[2016-06-06 Mon 23:52] =>  0:56
 - If there is time on Sunday, 6/5, do this.
 Current code:
 #+begin_src python
 logger.info('Levenshtein distance algorithm in use: ' + str(self.distAlg.__name__))
 #+end_src
+- Numerous changes made to improve error handling.
 outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
 ** TODO Consider the advantage to using a rolling hash compression algorithm for efficiency
-   DEADLINE: <2016-06-06 Mon>
+   DEADLINE: <2016-06-11 Sat>
 - This is something to mention on the Monday, 6/6 meeting
 ** DONE Correct some design issues in compression.py
    DEADLINE: <2016-06-04 Sat>
@@ -321,10 +324,12 @@ outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
 - Contributes to understanding of possible applications and to current state-of-the art approaches to similar problems. Additionally, to understanding of underlying and related concepts.
 ** DONE Research shingling
 ** DONE Update proposal first draft for first meeting with Prof Augenstein
+   CLOCK: [2016-06-05 Sun 21:06]--[2016-06-05 Sun 21:47] =>  0:41
    CLOCK: [2016-06-03 Fri 22:44]--[2016-06-03 Fri 22:49] =>  0:05
    CLOCK: [2016-06-03 Fri 22:06]--[2016-06-03 Fri 22:43] =>  0:37
 - This involved some consideration about whether to implement a plaigarism detector as part of the project. I've decided that, while interesting, it's too tangential and likely to detract from the rest of the project.
-** TODO Read about entropy
+- Converted ascii to a word document to a pdf. Not written in LaTeX. Exported to pdf. 
+** DONE Read about entropy
    DEADLINE: <2016-06-06 Mon>
    CLOCK: [2016-06-04 Sat 00:21]--[2016-06-04 Sat 00:43] =>  0:22
    CLOCK: [2016-06-04 Sat 00:07]--[2016-06-04 Sat 00:11] =>  0:04
@@ -341,7 +346,7 @@ outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
 - Read wiki here: https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem
 - This will need to be readdressed after food/sleep.
 - 
-** TODO Read more about nosetests
+** DONE Read more about nosetests
    CLOCK: [2016-06-04 Sat 20:40]--[2016-06-04 Sat 21:07] =>  0:27
 - Need some clarification on why setup_class needs to be a classmethod
 ** DONE Plan schedule for rest of weekend
@@ -357,26 +362,303 @@ outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
 ** DONE Reading about python module style
    CLOCK: [2016-06-04 Sat 23:23]--[2016-06-04 Sat 23:46] =>  0:23
 - As it pertains to how many classes one might have in a module, organization of modules, etc. In other words, how python treats modules vs. packages vs. classes
-** TODO Abstract base classes and virtual methods in Python
+** DONE Abstract base classes and virtual methods in Python
    CLOCK: [2016-06-05 Sun 19:50]--[2016-06-05 Sun 20:13] =>  0:23
    CLOCK: [2016-06-04 Sat 23:46]--[2016-06-05 Sun 00:04] =>  0:18
-- Turns out that abstract base classes are relatively newly added to the standard and pretty hacky. All methods in python are "virtual", but unlike java, 
+- Turns out that abstract base classes are relatively newly added to the standard and pretty hacky. All methods in python are "virtual", but unlike java, are also "abstract".
+- Can raise a ]NotImplemented error.
 ** DONE Considering project design
    CLOCK: [2016-06-05 Sun 19:09]--[2016-06-05 Sun 19:50] =>  0:41
 - Will have a script that accepts two file names, compression type, LD algorithm, and returns a computed distance. Demo's will be built on top of this that may assess the qualities of the process. 
 - Demo directory can live in ./leven-squash/levenshtein/. It is will live the demos as well as the sample data for testing. 
 - ./leven-squah/levenshtein/ will consist of data/, compression.py, distance.py, and main.py and perhaps a utilities directory containing modules for evaluating the algorithm.
-
 ** DONE Phone call discussing project ideas
    CLOCK: [2016-06-05 Sun 19:54]--[2016-06-05 Sun 20:13] =>  0:19
 - Discussion about compression algorithms, project design, logging practice, and testing practice. 
-** TODO Finishing organization of project
-   CLOCK: [2016-06-05 Sun 20:15]
+** DONE Finishing organization of project
+   CLOCK: [2016-06-05 Sun 20:15]--[2016-06-05 Sun 20:39] =>  0:24
 - This includes making utility directory, moving mock data directory to the demo directory, consolidating ACompressor and other compressors into a single file, updating test import statements to reflect these changes, and then pushing to github. 
 - Also, python convention says to not have hyphens in the name, so this needs to be corrected. It actually has some sorta program-breaking effects with importing.
-*** TODO Remove this file (project.org) from github, create a simlink, and add that to a git repo on my ec2 machine (for privacy).
-** TODO 
-* Tasks [0/3]
+*** DONE Remove this file (project.org) from github, create a simlink, and add that to a git repo on my ec2 machine (for privacy).
+    DEADLINE: <2016-06-06 Mon>
+** DONE Improve python environment
+- I've found myself wasting a lot of time looking up documentation and tediously manually looking through directory trees to find symbol definitions.
+*** DONE Complete python ide setup
+   CLOCK: [2016-06-05 Sun 22:09]--[2016-06-05 Sun 23:21] =>  1:12
+- This was largely unsuccessful. The resource I was using expected auto-complete.el, while I use company-mode.el, the leading alternative. My attempts to work around this were wasting time, so moving on with elpy.el (the resource I was using was suggesting emacs-jedi.el).
+*** DONE Read about Python virtualenv
+   CLOCK: [2016-06-05 Sun 23:21]--[2016-06-05 Sun 23:48] =>  0:27
+-
+*** DONE Read over this resource
+    CLOCK: [2016-06-06 Mon 00:18]--[2016-06-06 Mon 00:25] =>  0:47
+- https://realpython.com/blog/python/emacs-the-best-python-editor/
+*** DONE Install python packages virtualenv, importmagic, flake8, and autopep8
+   CLOCK: [2016-06-05 Sun 23:49]--[2016-06-06 Mon 00:18] =>  0:29
+- these provide virtual environments, symbol resolution, syntax checking, and python convention checking.
+** DONE Add proper exception handling and logging to compressors
+   CLOCK: [2016-06-06 Mon 22:53]--[2016-06-06 Mon 23:07] =>  0:14
+
+   CLOCK: [2016-06-06 Mon 21:21]--[2016-06-06 Mon 22:24] =>  1:03
+- Add proper exception handling
+- Add proper logging
+** DONE Update leven_squash.py
+   DEADLINE: <2016-06-06 Mon>
+- Basic leven_squash implementation should be a single function, not encapsulated in a class.
+- Should also be a script, callable from commandline, that wraps it.
+   CLOCK: [2016-06-06 Mon 17:38]--[2016-06-06 Mon 18:20] =>  0:42
+- Had to do some tests to solve a bug.
+   CLOCK: [2016-06-06 Mon 15:50]--[2016-06-06 Mon 16:05] =>  0:15
+- Made basic method for performing leven_squash. Accepts compression scheme, distance algorithm, and strings.
+- Set default schemes, tested output.
+   CLOCK: [2016-06-06 Mon 14:36]--[2016-06-06 Mon 14:57] =>  0:21
+   CLOCK: [2016-06-06 Mon 14:26]--[2016-06-06 Mon 14:29] =>  0:03
+*** TODO Is it even convention in Python to use getters and setters?
+    CLOCK: [2016-06-06 Mon 14:29]--[2016-06-06 Mon 14:36] =>  0:07
+- Reading here: http://stackoverflow.com/questions/2627002/whats-the-pythonic-way-to-use-getters-and-setters
+  - And then here: https://docs.python.org/3/library/functions.html#property
+- Reading here: http://stackoverflow.com/questions/6618002/python-property-versus-getters-and-setters
+
+- Long story short, because python has no access modifiers, generally access attributes directly. There is a property decorator that provides getter/setter functionality (based on the python convention of naming implementation detail attributes with a preceding underscore), but should be avoided when possible.
+** TODO Functors in python
+   DEADLINE: <2016-06-06 Mon>
+- It occurs to me that LD approximation algorithms have some sort of compression factor, and that therefore it might be nice to encapsulate LD algs.
+** DONE The positivity of C and N should be guaranteed by the Compressor class
+   CLOCK: [2016-06-06 Mon 22:25]--[2016-06-06 Mon 22:53] =>  0:28
+- Compressor.compress shouldnt havent to check each time, there should be checks on assignment. Use properties to this effect. 
+- This is handled for now, but I'm doubtful of my technique.
+** DONE Correct python interpreter
+   CLOCK: [2016-06-06 Mon 23:54]--[2016-06-07 Tue 00:05] =>  0:11
+- Something is wrong with the python path, I think. I can't seem to figure out what.
+- Whatever, it's not worth fiddling around with. Replaced iPython with cPython.
+** DONE Create logging config file from json
+   CLOCK: [2016-06-07 Tue 02:43]--[2016-06-07 Tue 03:03] =>  0:20
+- Loggers were getting hard to keep track of. Created logging.json and logging.py in leven-squash/config/
+- Logging.py reads the json into a dict and then configures logging.
+** DONE Create logging tests
+   CLOCK: [2016-06-08 Wed 21:21]--[2016-06-08 Wed 23:06] =>  1:45
+   CLOCK: [2016-06-08 Wed 20:23]--[2016-06-08 Wed 21:01] =>  0:38
+   CLOCK: [2016-06-08 Wed 17:59]--[2016-06-08 Wed 20:10] =>  2:11
+- Getting an import error when importing logging config code. Hmm. 
+- nose unit test classes have to start with "Test". Sigh...
+- implementing this singleton pattern for avoiding importing and configuring logging in every module is just too much a pain for too little reward. On the backburner for now, in it's place are some dumb redundancies, for now.
+- Had some errors in the JSON config file that went unnoticed. Fixed, now.
+- Finally. Pushed to github.
+** DONE Shannon entropy vs. Diversity index
+   CLOCK: [2016-06-13 Sat 14:02]--[2016-06-13 Mon 02:56] => -12:54
+- This took some thinking about, but I'm pretty sure that Shannon entropy is what is most relevant.
+Ask Yury
+** DONE Discuss algorithm
+   CLOCK: [2016-06-11 Sat 17:04]--[2016-06-11 Sat 19:58] =>  2:54  (minus 20 minutes for break)
+- Discussed how to interpret entropy of random english text
+- Possible weaknesses of the algorithm
+- Decided conjecture was that the distribution of characters in a given signature would tend
+to be non-uniform, but much closer than english. This is because the algorithm digests patterns into
+characters, and of course, intuitively, 5+ length patterns of english text tend to be less unevenly
+distruted, as they tend to cover more then one word at once. Of course, therefore N relates to the
+entropy of the output characters. Right?
+** DONE Read about entropy
+   CLOCK: [2016-06-12 Sun 22:44]--[2016-06-12 Sun 23:30] =>  0:56
+** DONE Write code to randomly generate character strings
+   CLOCK: [2016-06-11 Sat 21:56]--[2016-06-11 Sat 22:23] =>  0:27
+- use Random.randint(a, b)
+- This is to be used to generate signatures, then look at their distribution. I expect it to be
+completely uniform.
+** DONE What is considered when thinking about the entropy of an english character string?
+   DEADLINE: <2016-06-11 Sat>
+   CLOCK: [2016-06-12 Sun 21:01]--[2016-06-12 Sun 21:29] => 0:28
+- Obviously some letters are more common than others. But so are some letter sequences. That is, in a string
+of english, a previos event affects the likelihood of the next event. If you have a T it is especially likely that 
+the next letter is an H, and espectially unlikely that it is a B, an otherwise faily common letter.
+- Yury and I decided to use the simple measure.
+** DONE Write code to compute entropy of a string
+   CLOCK: [2016-06-13 Mon 22:49]--[2016-06-13 Mon 23:11] =>  0:22
+   CLOCK: [2016-06-13 Mon 21:15]--[2016-06-13 Mon 22:36] =>  1:21
+- Using scipy for the string entropy calculation
+- Probability distribution is done manually
+- Might want to consider using numpy for arrays, not sure.
+
+** DONE Correct faster code to generate random string from an alphabet
+   CLOCK: [2016-06-14 Tue 20:01]--[2016-06-14 Tue 22:33] =>  2:32
+- It's pretty slow. Should be a way to speed it up.
+- How to efficiently generate a random string in Python? Looking here:
+ http://stackoverflow.com/questions/16308989/fastest-method-to-generate-big-random-string-with-lower-latin-letters
+- Uses choice() method, a list, and join, cool.
+** DONE Write entropy unit tests
+   CLOCK: [2016-06-14 Tue 20:33]--[2016-06-14 Tue 21:17] =>  0:44
+- What is the expected entropy for a uniform distribution?
+** DONE Shell tests revealed problems with entropy function
+   CLOCK: [2016-06-14 Tue 22:17]--[2016-06-14 Tue 22:30] =>  0:13
+- Not sure what's up, it's returning nothing.
+- Problem was that it was testing the distribtion characters to confirm alphabet, instead of, of course, 
+checking the alphabet.
+** DONE Design Question
+   CLOCK: [2016-06-14 Tue 21:51]--[2016-06-14 Tue 22:10] =>  0:19
+-- Should entropy() fact check the string alphabet? That is, should it accept the intended alphabet as a parameter,
+or should it just accept a distribution dict? Decided to have it use a default variable for simplicity.
+** DONE Create a dedicated alphabet module
+   CLOCK: [2016-06-14 Tue 22:20]--[2016-06-14 Tue 22:50] =>  0:30
+- Use python.string to define alphabets, I think.
+- Update other modules as needed.
+** DONE Correct entropy unit test to use assert
+   CLOCK: [2016-06-14 Tue 22:52]--[2016-06-14 Tue 23:19] =>  0:27
+- using assertTrue
+- Python has nifty chaining syntax for inequalities. 1 <= my_val <= 4 is valid syntax.
+- I'm not understanding something about using python iterators.
+- Corrected. Problem was with for loop idiom using copy.
+** DONE Use shell to play with entropy and utility functions naturally
+   CLOCK: [2016-06-15 Wed 19:38]--[2016-06-15 Wed 20:42] =>  1:04
+*Use debugger*
+   CLOCK: [2016-06-14 Tue 23:45]--[2016-06-15 Wed 00:17] =>  0:32
+   CLOCK: [2016-06-14 Tue 23:20]--[2016-06-14 Tue 23:42] =>  0:22
+- Corrected entropy bug. Was two-fold:
+  1. accidetnally was returning a default-constructed dict in the return statement (was there for testing purposes, whoope).
+  2. was failing to cast to float. I figured this was default behavior for the divison operator, and it is not in python 2 (it is in python 3).
+- Continue tomorrow, wrists hurt.xc
+- Entropy seems to work fine.
+** TODO Get decent english data sets
+   CLOCK: [2016-06-15 Wed 21:09]--[2016-06-15 Wed 21:48] =>  0:39
+- Probably will use gutenberg, possibly pull from wikipedia.
+- Downloading all books from Project Gutenberg. Excessive, as there are tens of thousands of them, but I have a very fast internet connection, and it's the most human-efficient way of getting 100-200 plain-text books.
+- Will have to unpack the ZIM file tomorrow.
+** DONE Organize shedule for today and tomorrow
+   CLOCK: [2016-06-15 Wed 20:42]--[2016-06-15 Wed 20:55] =>  0:13
+** TODO Does high signature entropy imply that it can be further optimized?
+** DONE Framework for computing entropy
+   DEADLINE: <2016-06-15 Wed>
+   CLOCK: [2016-06-15 Wed 23:16]--[2016-06-15 Wed 23:31] =>  0:15
+   CLOCK: [2016-06-15 Wed 22:52]--[2016-06-15 Wed 23:13] =>  0:21
+- what else is needed? 
+- Possibly some sort of stochastic process for more accurately measuring the entropy of english, which is obviously far more predictable in the fine grain than a standard probability distribution. Probably a Markov Chain, which probably wouldn't be that difficult to implement. However, I don't think it's totally necessary right now, and is more appropriate as an additional feature down the line.
+** TODO Framework for testing entropy
+   DEADLINE: <2016-06-15 Wed>
+   CLOCK: [2016-06-15 Wed 23:32]--[2016-06-15 Wed 23:44] =>  0:12
+- Not unit testing entropy modules, but actually testing entropy as it pertains to this levenshtein process.
+- While considering the design of this module, it's occurred to me that it should be designed with variable entropy computation methods in mind (basic logarithmic Shannon method, some stochastic method, etc). So I'll be repackaging the current entropy module to fit that paradigm, now.
+** DONE Modularize entropy calculation
+   CLOCK: [2016-06-15 Wed 23:47]--[2016-06-16 Thu 00:31] =>  0:44
+- Various entropy calculation methods should be pluggable. 
+- Okay, do I really care about the intended alphabet for entropy calculation? Is this type of check really the onus of the entropy framework? Probably not. It's easy enough to write such a function after the fact if the use case needs assurances. 
+** TODO Dodge/Alisa similarity metric
+   DEADLINE: <2016-06-16 Thu>
+** TODO Plug in approximation algorithms (or just one)
+   DEADLINE: <2016-06-16 Thu>
+** TODO Entropy unit test to assert entropy of string is greater-equal entropy of signature
+   DEADLINE: <2016-06-16 Thu>
+** DONE Is my techique for calulating written english entropy accurate?
+   CLOCK: [2016-06-15 Wed 21:50]--[2016-06-15 Wed 22:28] =>  0:38
+- Reading Shannon's paper, /Prediction and Entropy of Written English/
+- http://languagelog.ldc.upenn.edu/myl/Shannon1950.pdf
+- I can discuss this with yury again on Friday, but I think it's okay, at least for the moment.
+** DONE Should normalize text before doing compression or entropy calculations
+   CLOCK: [2016-06-15 Wed 22:29]--[2016-06-15 Wed 22:52] =>  0:23
+- Change to lower case, remove punctuaion, etc. 
+- Write a function for this in string.py
+** TODO Add another hashing algorithm
+   DEADLINE: <2016-06-16 Thu>
+** TODO Write demo
+   CLOCK: [2016-06-17 Fri 17:51]--[2016-06-17 Fri 18:00] =>  0:09
+** TODO Module for scoring estimates
+   CLOCK: [2016-06-18 Sat 01:22]--[2016-06-18 Sat 01:47] =>  0:25
+   CLOCK: [2016-06-17 Fri 19:41]--[2016-06-17 Fri 21:05] =>  1:24
+   CLOCK: [2016-06-17 Fri 18:00]--[2016-06-17 Fri 19:00] =>  1:00
+- How should this module for scoring estimates handle LD /approximation algorithms/ (when they are added to the program).
+1. function that accepts two signatures, two strings, and gives information about them
+*** Debug
+    CLOCK: [2016-06-17 Fri 23:05]--[2016-06-17 Fri 23:50] =>  0:45
+- Ran into an interesting problem. See below.
+** TODO Why is the collision rate for randomly generated strings not as expected?
+   CLOCK: [2016-06-17 Fri 23:50]--[2016-06-18 Sat 00:44] =>  0:54
+The following code is being used to calculate by brute force the average difference between randomly generated strings of the same length. In other words, the LD divided by the length of the (equal length) strings:
+#+begin_src python
+  # Calculate average similarity between random strings of equal length
+
+  from levenshtein import leven_squash
+  from levenshtein.utils import stringer
+
+  str_len = 10000
+  num_iters = 1000
+  sum = 0
+  r = stringer.random_string
+  ls = leven_squash.LevenSquash()
+
+  print("Calculating...")
+  for i in range(num_iters):
+      est = ls.estimate(r(str_len), r(str_len))
+      sum += est
+      if i % num_iters/10 == 0:
+          print(str((i*10)/num_iters) + '%')
+
+  print("Done.")
+
+  calc_diff = sum / float(str_len*num_iters)
+
+  comp = ls.get_compressor()
+  alg = ls.get_ld_alg()
+
+  alpha_len = len(comp.get_alphabet())
+  # The expected difference between two strings is probability of a collision between
+  # two randomly generated strings for a given character (1/alpha_len) divided by the 
+  # length of the strings (str_len).
+  exp_diff = str_len / float(alpha_len)
+
+  print("Compression scheme: " + comp.__class__.__name__ +
+        "Compression alphabet length: " + alpha_len +
+        "LD algorithm: " + alg.__class__.__name__ +
+        "Calculated LD difference: " + calc_diff +
+        "Expected LD difference: " + exp_diff)
+#+end_src
+After running the code, the output was:
+
+
+This suggests that either the distribution of the random function that's generating the string is not nearly random, which is unlikely because it's a builtin python method that claims to be uniformily distributed, or it's a problem somewhere else.
+
+The following code tests the distribution:
+#+begin_src python
+from levenshtein.utils import entropy
+from levenshtein.utils import stringer
+from levenshtein.utils import alphabet
+
+ent = entropy.ShannonBasic()
+r = stringer.random_string
+alphab = alphabet.ALPHABET_BASIC
+alphab_len = len(alphab)
+
+calc_ent = ent.calculate(r(10000, alphab))
+
+# Theoretical probability of a given character being selected from alphabet
+alphab_prob = 1/alphab_len
+distr = dict()
+for char in alphab:
+    # assume uniform distribution of random characters
+    distr[char] = alphab_prob
+exp_ent = ent.get_entropy(distr.values())
+
+print("calculated entropy: " + str(calc_ent) +
+      "expected entropy: " + str(exp_ent))
+#+end_src
+** Write test for random_string()
+   CLOCK: [2016-06-18 Sat 00:44]--[2016-06-18 Sat 01:11] =>  0:27
+- Have to sanity check that it's doing it's job uniformily
+
+
+** DONE Some convenience functions needing implementation
+1. a function that gets the LD between two strings.
+1. a function that gets the LD between two files.
+** DONE Modularize LevenSquash
+   CLOCK: [2016-06-17 Fri 19:00]--[2016-06-17 Fri 19:40] =>  0:40
+- This is so that the module for computing estimation quality, etc, may be composed from it. It will need to share some of its functionality.
+*** TODO Debug
+    CLOCK: [2016-06-17 Fri 21:10]--[2016-06-17 Fri 22:40] =>  1:30
+** DONE Debug compression
+   CLOCK: [2016-06-17 Fri 22:41]--[2016-06-17 Fri 23:00] =>  0:19
+- Re-packaged compression had some bugs. Notable, the new alphabet scheme wasn't properly integrated, and compress() wasn't returning _compress().
+
+** DONE Tidy git repository
+   CLOCK: [2016-06-18 Sat 02:23]
+   CLOCK: [2016-06-18 Sat 01:53]--[2016-06-18 Sat 02:14] =>  0:21
+- There a bunch of commits to be made
+- Also some garbage in the repository
+* Tasks [3/6]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
 "A generic new() constructor that takes the string name of the desired
@@ -391,10 +673,10 @@ and should be preferred."
    DEADLINE: <2016-04-30 Sat>
 <<<<<<< HEAD
 <<<<<<< HEAD
-** TODO Determine how to display paper
-   DEADLINE: <2016-06-04 Sat>
+** DONE Determine how to display paper
+   DEADLINE: <2016-06-06 Mon>
 - Either it is displayed as a classic LaTeX paper, or it's in a website (possibly with latex components?) accompanied by demonstration applets (JavaScript?). I prefer the latter option, but question how feasible it is.
-** By Monday, 6/6
+** DONE By Monday, 6/6
    DEADLINE: <2016-06-05 Sun>
 - [[Modularize hashing algorithm]]
 - [[Write tests for low entropy, high entropy]] [0/2]
@@ -402,13 +684,18 @@ and should be preferred."
   - [ ] Design tests
 *** TODO Finish proposal [0/1]
 - [ ] Email Augenstein asking about how to display paper?
-** TODO How are abstract base classes done properly?
+** DONE How are abstract base classes done properly?
    DEADLINE: <2016-06-06 Mon>
 - what does one do in python when one wants an abstract base class?
 ** TODO Browsing commerical Python source code
    CLOCK: [2016-06-05 Sun 01:28]--[2016-06-05 Sun 02:12] =>  0:44
 - Interestingly, this substantially sized project has no traces of logging usage: https://github.com/pybuilder/pybuilder.
 - Reading about loggers on this documentation page after browsing the source on github: http://doc.scrapy.org/en/latest/topics/logging.html.
+
+* TBD Features and Ideas
+- Possible features to be added
+** Markov Chain to estimate entropy for English text
+** Dodge/Alisa similiarity metric
 * Notes and Questions
 ** Python [0/1]
 *** Method object vs Function object
@@ -449,7 +736,6 @@ What is the correct way for returning the information I'd like? That is, the ori
 *** TODO Unit testing in python 
 https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
 ** Problem [0/0]
-=======
 ** Underlying Concepts
 *** Near-Duplication
 **** A Stanford paper on near-duplication w/ shingling
@@ -482,9 +768,38 @@ https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-tes
 - discussed details of objectives of project for the purpose of finilizing the proposal
 - decided that the idea of implementing a plagiarism detector is nice in lieu of a graphical interface for variably displaying the effects of the process (its entropy, perhaps as its affected by varying the properties of the compression process, n and c, or the levenshtein distance algorithm used). It is possible that the aforementioned graphical display program would not be interesting due to a minimal effect of those variables on entropy. Because this is an effect yet to be determined (as a task of this project), this is necessarily an open-ended goal.
 *** Assignments
-**** TODO Modularize hashing algorithm
+**** DONE Modularize hashing algorithm
      DEADLINE: <2016-06-05 Sun>
 **** TODO Write tests for low entropy, high entropy
-     DEADLINE: <2016-06-05 Sun>
-
+     DEADLINE: <2016-06-11 Sat>
+** Meeting 4
+   CLOCK: [2016-06-10 Fri 11:01]--[2016-06-10 Fri 2:10] => 03:09
+- Talked about entropy
+- Discussed the algorithm and some of its possible weaknesses.
+-
+** Meeting 5
+   CLOCK: [2016-06-13 Mon 11:02]--[2016-06-13 Mon 14:37] => 03:32
+*** Idea for having a large alphabet and sorting the output
+- unicode might be too small of an alphabet to minimize collisions. Could be better to take only some of the 
+bits of the hash on the neighborhood.
+- 
+*** Entropy
+- Cross entropy probably not useful
+- Use basic distribution of english characters. Not worth going into sochratic information content.
+*** Schedule
+**** By Friday 6/17
+***** framework for computing entropy
+  - function to calculate distribution
+***** framework for testing entropy
+  - test dependence on hash
+  - function to run on varying N and C range
+***** some samples
+***** New idea for similarity metric
+  - implement
+  - test. But how?
+***** plug in approximation algorithms
+***** try different hashing algorithms. Maybe crc. Get some tests for seeing which ones are most efficient.
+  - Need to use a levenshtein computation that doesnt take up a lot of memory
+** Meet ing 6
+   DEADLINE: <2016-06-17 Fri>
 
