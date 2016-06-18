@@ -5,3 +5,6 @@
 /*project.org*
 \#*\#
 /tests/python_levenshtein_tests.py~
+/errors.log
+/info.log
+/levenshtein/demo/demo1.py
