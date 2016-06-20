@@ -1,32 +1,114 @@
+import inspect
+
 from levenshtein.leven_squash import LevenSquash
 
 
 class ScoreDistance:
     """
-    Class for assessing qualities of leven-squash distance estimateoutput
+    Class for assessing qualities of leven-squash distance calculations.
     """
-    # Amount by which the LD of a pair of equal length random text strings is
-    # smaller than their length. This is used to fudge the product of
-    # signature LD and compression factor to adjust the expectation.
-    # Note, this is a function of the alphabet length of the compression
-    # scheme.
-    wholeFileRatio = 0.022
-
-    # Amount by which the LD of a pair of equal size plain-generated
-    # signatures is smaller than their length. This is used to fudge product
-    # of signature LD and compression factor to adjust the expectation.
-    sigRatio = 0.030
-
     def __init__(self, ls=LevenSquash()):
-        self._ls = ls
         # hmm
-        self.log = logging.getLogger()
+        # self.log = logging.getLogger()
+        self._ls = ls
 
-    def get_distance(self):
-        return self._ls.get_ld_alg()
+    def get_leven_squash(self):
+        """
+        Returns a deep copy of the LevenSquash module being scored.
+        """
+        pass
 
-    def get_compressor(self):
-        return self._ls.get_compressor()
+    def set_leven_squash(self, ls):
+        self.reset_cache()
+        self._ls = ls
+
+    def compress(self, string):
+        return self._ls.compress(string)
+
+    def calculate(self, str1, str2):
+        return self._ls.calculate(str1, str2)
+
+    def estimate(self, str1, str2):
+        return self._ls.estimate(str1, str2)
+
+    def estimate_corrected(self, str1, str2):
+        return self._ls.estimate_corrected(str1, str2)
+
+    @staticmethod
+    def difference(a, b):
+        """
+        Accepts two numbers, 'a' and 'b',  and returns a score of how
+        different a is from b. Return value is between -1 and 1, with negative
+        values denoting a < b and positive values a > b. That is, how much
+        different is a from b.
+        """
+        return (a - b) / float(b)
+
+    @staticmethod
+    def error(calculation, approximation):
+        return abs(ScoreDistance.difference(approximation, calculation))
+
+    @staticmethod
+    def similarity(self, dist_alg, str1, str2):
+        """
+        Uses dist_alg to compute the distance between str1 and str2.
+        Returns the similarity of the two strings, which is 1 minus
+        the difference ratio.
+        """
+        diff = dist_alg(str1, str2)
+        longer = max(len(str1), len(str2))
+
+        similarity = 1 - diff/longer
+
+        return similarity
+
+    def similarity_absolute(self, str1, str2):
+        """
+        Computes the exact similarity between strings str1 and str2.
+        Uses the underlying LevenSquash instance's distance algorithm.
+        """
+        alg = self.calculate
+
+        return ScoreDistance.similarity(alg, str1, str2)
+
+    def similarity_estimate(self, str1, str2):
+        """
+        Computes the approximate similarity between strings str1 and str2.
+        Uses the underlying LevenSquash instance's basic estimation process
+        (squash distance scaled by compression factor).
+        """
+        alg = self.estimate
+
+        return ScoreDistance.similarity(alg, str1, str2)
+
+    def similarity_corrected_estimate(self, str1, str2):
+        """
+        Computes the approximate similarity between strings str1 and str2.
+        Uses the underlying LevenSquash instance's corrected estimation process
+        (squash distance scaled by compression factor, then multiplied by a
+        correction factor).
+        """
+        alg = self.estimate_corrected
+
+        return ScoreDistance.similarity(alg, str1, str2)
+
+    def score_corrected_estimate(self, str1, str2):
+        """
+        Returns the improvement factor of LS.estimate_corrected(str1, str2)
+        over LS.estimate(str1, str2). Value returned is between -1 and 1.
+        """
+        absolute_dist = self.calculate(str1, str2)
+        estimated_dist = self.estimate(str1, str2)
+        corrected_dist = self.estimate_corrected(str1, str2)
+
+        err_estimate = ScoreDistance.difference(estimated_dist,
+                                                absolute_dist)
+        err_corrected = ScoreDistance.difference(corrected_dist,
+                                                 absolute_dist)
+
+        return ScoreDistance.difference(abs(err_corrected),
+                                        abs(err_estimate))
+
 
     # Adjust an estimate for the difference between the LD of randomly chosen
     # English text and the LD of the corresponding signatures differs.
