@@ -1,15 +1,16 @@
 from levenshtein.compression import StringCompressorBasic
 
-from base_compressor_test_class import BaseCompressorTestClass
+from base_compressor_test_class import TestCompressorClassBase
+from levenshtein.utils.stringer import random_string
+
 
 # Tests for the most basic compression algorithm.
-class TestStringCompressorBasic (BaseCompressorTestClass):
+class TestStringCompressorBasic(TestCompressorClassBase):
+    Compressor = StringCompressorBasic
+
     @classmethod
     def setup_class(cls):
-        TestStringCompressorBasic.setup_method_msg = "Calling TestCompression method: "
-        TestStringCompressorBasic.teardown_method_msg = "Tearing down TestCompression function"
-        TestStringCompressorBasic.setup_class_msg = ""
-        TestStringCompressorBasic.teardown_class_msg = "Tearing down TestCompression class"
+        pass
 
     @classmethod
     def teardown_class(cls):
@@ -21,11 +22,14 @@ class TestStringCompressorBasic (BaseCompressorTestClass):
     def teardown(self):
         pass
 
-    def test_compression_signature_size(self):
-        # logger start msg
+    def test_compression_signature_size_on_random_string(self):
+        """
+        Ensure compressed random string size within a small amount of error.
+        """
+        r = random_string
+        LARGE_STR_LEN = 100000
 
-        # get some test files
-        filename = ''
+        test_str = r(LARGE_STR_LEN)
 
-        for i in range(50, 150):
-            self._test_compression_signature_size(filename, i, 8)
+        for i in range(149, 150):
+            self._test_compression_signature_size(test_str, i, 8)

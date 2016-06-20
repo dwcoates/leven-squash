@@ -1,17 +1,12 @@
 from levenshtein.compression import ACompressor
 
-from base_compressor_test_class import BaseCompressorTestClass
+from base_compressor_test_class import TestCompressorClassBase
 
 
-class TestACompressor(BaseCompressorTestClass):
-    setup_method_msg = "Calling ACompressorTest method: "
-    teardown_method_msg = "Tearing down ACompressorTest function"
-    setup_class_msg = ""
-    teardown_class_msg = "Tearing down ACompressorTest class"
-
+class TestACompressor(TestCompressorClassBase):
     def __init__(self):
         self.sc = ACompressor()
-        self.filename = "/home/dwcoates/workspace/leven-squash/data/10001.txt"
+        self.filename = "/home/dwcoates/workspace/leven-squash/levenshtein/demo/data/10001.txt"
         with open(self.filename, 'r') as f:
             self.finput = f.read()
 
@@ -21,16 +16,15 @@ class TestACompressor(BaseCompressorTestClass):
 
     @classmethod
     def teardown_class(self):
-        print(ACompressorTest.teardown_class_msg)
+        pass
 
     def setup(self):
-        print(ACompressorTest.setup_method_msg)
         print("Compression factor: " + str(self.sc.C))
         print("Neighborhood size: " + str(self.sc.N))
         print("Location of data to be compressed: " + self.filename)
 
     def teardown(self):
-        print(ACompressorTest.teardown_method_msg)
+        print(TestACompressor.teardown_method_msg)
 
     def test_get_and_set(self):
         """For testing working @properties. Mostly for sanity-checking relavent Python knowledge."""

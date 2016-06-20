@@ -1,13 +1,14 @@
 #from levenshtein.config.logging import LoggerManager
 import logging
 
+from nose.tools import assert_true, assert_equals
 
-class BaseCompressorTestClass:
+
+class TestCompressorClassBase:
     """
     Base test class for Compressor test classes.
     """
-
-    __test__ = False
+#    __test__ = False
 
     logger = logging.getLogger()
     #logger = LoggerManager.get_logger()
@@ -41,8 +42,8 @@ class BaseCompressorTestClass:
     def setup_class(cls):
         print(cls.setup_class_msg)
 
-        for base in cls.__class__.__bases__:
-            cls.assertEquals(base.__name__, "ACompressor")
+        # for base in cls.__bases__:
+        #     assert_equals(base.__name__, "ACompressor")
 
     @classmethod
     def teardown_class(cls):
@@ -54,24 +55,21 @@ class BaseCompressorTestClass:
     def teardown(self):
         print(self.teardown_method_msg)
 
-    def test_compression_signature_size(self, n, c):
-        raise NotImplementedError()
+    def test_compression_signature_size(self):
+        pass
 
     @classmethod
-    def _test_compression_signature_size(cls, fname, c, n):
-        sc = cls.Compressor()
-        string = ''
-        try:
-            with open(fname, 'r') as file:
-                string = file.read()
-        except IOError:
-            cls.logger.error("Failed to read file %s.", fname)
+    def _test_compression_signature_size(cls, string, c, n):
+        sc = cls.Compressor(c, n)
 
         signature = sc.compress(string)
         sig_length = len(signature)
-        sig_expected_length = len(string)/c
+        sig_expected_len = len(string)/sc.getC()
 
-        ratio = sig_length/sig_expected_length
-        error = abs(sig_length-sig_exected_length)/sig_expected_length
+        error = abs(sig_expected_len-sig_length)/sig_expected_len
+
+        acceptable_error = .01
+
+        assert_true(error <= acceptable_error)
 
         #produce error messages
