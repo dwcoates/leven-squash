@@ -7,8 +7,8 @@ class ACompressor:
     _chars = alphabet.ALPHABET_BASIC
 
     def __init__(self, C=150, N=8, alphabet=None):
-        self.N = C
-        self.C = N
+        self.C = C
+        self.N = N
 
         self.logger = logging.getLogger(__name__)
 
@@ -32,10 +32,10 @@ class ACompressor:
     def setN(self, n):
         self.N = n
 
-    def getC(self, c):
+    def getC(self):
         return self.C
 
-    def getN(self, n):
+    def getN(self):
         return self.N
 
     def get_alphabet(self):
@@ -77,13 +77,14 @@ class StringCompressorBasic (ACompressor):
     # TODO Revisit this. It looks correct, but it takes n steps at each
     # position.
     def _compress(self, string):
-        retstr = ''   # should this be over-allocated? Probably doesn't matter.
-        strPos = 0
-        strLen = len(string)
+        charlist = list()   # should this be over-allocated? Probably doesn't matter.
+        str_pos = 0
+        str_len = len(string)
+        alpha_len = len(self.get_alphabet())
 
         # Accumulate a value for each position that included an entire
         # neighborhood.
-        while strPos+self.N < strLen:
+        while str_pos+self.N < str_len:
             acc = 0
             # Starting with no bits set in an accumulator, for each element in
             # the neighborhood, XOR in the element at a fresh 8-bit position.
@@ -91,14 +92,15 @@ class StringCompressorBasic (ACompressor):
             # bits in a long.
             for i in range(0, self.N):
 
-                val = ord(string[strPos+i])
+                val = ord(string[str_pos+i])
                 # val<<=i*8%64
                 val <<= i*8 % 56
                 acc ^= val
                 acc = abs(acc)
             if acc % self.C == 0:
-                indx = acc % len(self.get_alphabet())
-                outChar = self.get_alphabet()[indx]
-                retstr += outChar
-            strPos = strPos+1
-        return retstr
+                indx = acc % alpha_len
+                out_char = self.get_alphabet()[indx]
+                charlist.append(out_char)
+            str_pos = str_pos+1
+
+        return ''.join(charlist)

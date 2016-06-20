@@ -12,3 +12,10 @@
 /levenshtein/utils/.#log.json
 /levenshtein/utils/.#random_strings.py
 levenshtein/compression.pyc
+/levenshtein/utils/log/errors.log
+/levenshtein/utils/log/info.log
+/levenshtein/test.py
+/levenshtein/utils/test.py
+/tests/.#string_compressor_basic_tests.py
+/tests/errors.log
+/tests/info.log
