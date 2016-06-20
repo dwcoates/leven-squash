@@ -2,11 +2,11 @@ import os
 import json
 import logging
 import traceback
+import pkg_resources
 
 from logging.config import dictConfig
 
-LOGFILE_NAME = 'log/log.json'
-DEFAULT_LOG_PATH = ''.join((os.path.dirname(__file__), '/', LOGFILE_NAME))
+DEFAULT_LOG_PATH = pkg_resources.resource_filename('levenshtein.utils', 'log.json')
 
 def setup_logging(
     default_path=DEFAULT_LOG_PATH,

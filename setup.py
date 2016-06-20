@@ -16,7 +16,8 @@ setup(
     long_description=readme,
     author='Dodge W. Coates',
     author_email='dodge.w.coates@gmail.com',
-    package_data='levenshtein.demo.data',
+    package_data={'levenshtein.utils': ['log.json'],
+                  'demo.data': ['*.txt']},
     url='NONE',
     license='LICENSE',
     packages=find_packages(exclude=('tests', 'docs'))
