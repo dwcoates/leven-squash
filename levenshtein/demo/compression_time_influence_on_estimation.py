@@ -12,8 +12,8 @@ getcontext().prec = 6
 r = stringer.random_string
 
 
-def demo():
-    ls = LevenSquash()
+def demo(compressor=None):
+    ls = LevenSquash(compressor)
 
     BIG_STR_LEN = 100000
 
@@ -96,9 +96,7 @@ def demo():
     print("Portion of estimation time spent on compression: " +
           str(Decimal(compression_time_factor)*Decimal(100)) + "%")
 
-demo()
-
-
+    
 def time_compression(sc=StringCompressorBasic()):
     BIG_STR_LEN = 10000
     t_total = 0
