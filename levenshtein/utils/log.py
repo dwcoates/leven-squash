@@ -5,7 +5,7 @@ import traceback
 
 from logging.config import dictConfig
 
-LOGFILE_NAME = 'log.json'
+LOGFILE_NAME = 'log/log.json'
 DEFAULT_LOG_PATH = ''.join((os.path.dirname(__file__), '/', LOGFILE_NAME))
 
 def setup_logging(
