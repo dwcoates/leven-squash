@@ -1,18 +1,21 @@
 import time
+
 from decimal import *
 
 from levenshtein.utils import stringer
 from levenshtein.leven_squash import LevenSquash
 from levenshtein.score import ScoreDistance
-
+from levenshtein.compression import StringCompressorBasic
 
 getcontext().prec = 6
+
+r = stringer.random_string
 
 
 def demo():
     ls = LevenSquash()
-    r = stringer.random_string
-    BIG_STR_LEN = 100000
+
+    BIG_STR_LEN = 10000
 
     print("Random string length: " + str(BIG_STR_LEN))
 
@@ -92,3 +95,35 @@ def demo():
     compression_time_factor = t_sig_total/t_est_total
     print("Portion of estimation time spent on compression: " +
           str(Decimal(compression_time_factor)*Decimal(100)) + "%")
+
+
+def time_compression(sc=StringCompressorBasic()):
+    BIG_STR_LEN = 10000
+    t_total = 0
+    num_iters = 100
+    len_sum = 0
+
+    print("Compressing with " + sc.compress.__name__ + "...")
+    print("Compression factor C: " + str(sc.getC()))
+    print("Neighborhood size N: " + str(sc.getN()))
+
+    for i in xrange(num_iters):
+        r1 = r(BIG_STR_LEN)
+
+        start = time.clock()
+        sig = sc.compress(r1)
+        end = time.clock()
+        t = end - start
+        sig_len = len(sig)
+
+        len_sum += sig_len
+        t_total += t
+
+    avg_len = len_sum / num_iters
+    t_avg = t_total/num_iters
+
+    print("Finished.")
+    print("Time to compress '" + str(num_iters) + "' strings of length '" +
+          str(BIG_STR_LEN) + "': " + str(t_total)) 
+    print("Average time per compression: " + str(t_avg))
+    print("Average length of compressions: " + str(avg_len))

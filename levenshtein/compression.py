@@ -90,8 +90,7 @@ class StringCompressorBasic (ACompressor):
             # the neighborhood, XOR in the element at a fresh 8-bit position.
             # Wrap around and keep going if N is long enough to exhaust the 64
             # bits in a long.
-            for i in range(0, self.N):
-
+            for i in xrange(self.N):
                 val = ord(string[str_pos+i])
                 # val<<=i*8%64
                 val <<= i*8 % 56
