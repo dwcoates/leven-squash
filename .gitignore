@@ -19,3 +19,6 @@ levenshtein/compression.pyc
 /tests/.#string_compressor_basic_tests.py
 /tests/errors.log
 /tests/info.log
+/levenshtein/utils/errors.log
+*log
+*org
