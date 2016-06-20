@@ -1,4 +1,5 @@
 import logging
+import binascii
 
 from levenshtein.utils import alphabet
 
@@ -103,3 +104,28 @@ class StringCompressorBasic (ACompressor):
             str_pos = str_pos+1
 
         return ''.join(charlist)
+
+class StringCompressorCRC(ACompressor):
+    def _compress(self, string):
+        charlist = list()   # should this be over-allocated? Probably doesn't matter.
+        str_pos = 0
+        str_len = len(string)
+        alpha_len = len(self.get_alphabet())
+
+        # Accumulate a value for each position that included an entire
+        # neighborhood.
+        while str_pos+self.N < str_len:
+            acc = 0
+            # Starting with no bits set in an accumulator, for each element in
+            # the neighborhood, XOR in the element at a fresh 8-bit position.
+            # Wrap around and keep going if N is long enough to exhaust the 64
+            # bits in a long.
+            acc = binascii.crc32(string[str_pos:str_pos + self.N]) + 2**32
+            if acc % self.C == 0:
+                indx = acc % alpha_len
+                out_char = self.get_alphabet()[indx]
+                charlist.append(out_char)
+            str_pos = str_pos+1
+
+        return ''.join(charlist)
+
