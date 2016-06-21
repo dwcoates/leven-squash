@@ -1,5 +1,6 @@
 import logging
 import binascii
+import md5
 
 from levenshtein.utils import alphabet
 
@@ -19,7 +20,8 @@ class ACompressor:
 
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
@@ -78,43 +80,47 @@ class StringCompressorBasic (ACompressor):
     # TODO Revisit this. It looks correct, but it takes n steps at each
     # position.
     def _compress(self, string):
-        charlist = list()   # should this be over-allocated? Probably doesn't matter.
+        # should this be over-allocated? Probably doesn't matter.
+        charlist = list()
         str_pos = 0
         str_len = len(string)
         alpha_len = len(self.get_alphabet())
 
         # Accumulate a value for each position that included an entire
         # neighborhood.
-        while str_pos+self.N < str_len:
+        while str_pos + self.N < str_len:
             acc = 0
             # Starting with no bits set in an accumulator, for each element in
             # the neighborhood, XOR in the element at a fresh 8-bit position.
             # Wrap around and keep going if N is long enough to exhaust the 64
             # bits in a long.
             for i in xrange(self.N):
-                val = ord(string[str_pos+i])
+                val = ord(string[str_pos + i])
                 # val<<=i*8%64
-                val <<= i*8 % 56
+                val <<= i * 8 % 56
                 acc ^= val
                 acc = abs(acc)
             if acc % self.C == 0:
                 indx = acc % alpha_len
                 out_char = self.get_alphabet()[indx]
                 charlist.append(out_char)
-            str_pos = str_pos+1
+            str_pos = str_pos + 1
 
         return ''.join(charlist)
 
+
 class StringCompressorCRC(ACompressor):
+
     def _compress(self, string):
-        charlist = list()   # should this be over-allocated? Probably doesn't matter.
+        # should this be over-allocated? Probably doesn't matter.
+        charlist = list()
         str_pos = 0
         str_len = len(string)
         alpha_len = len(self.get_alphabet())
 
         # Accumulate a value for each position that included an entire
         # neighborhood.
-        while str_pos+self.N < str_len:
+        while str_pos + self.N < str_len:
             acc = 0
             # Starting with no bits set in an accumulator, for each element in
             # the neighborhood, XOR in the element at a fresh 8-bit position.
@@ -125,7 +131,34 @@ class StringCompressorCRC(ACompressor):
                 indx = acc % alpha_len
                 out_char = self.get_alphabet()[indx]
                 charlist.append(out_char)
-            str_pos = str_pos+1
+            str_pos = str_pos + 1
 
         return ''.join(charlist)
 
+
+class StringCompressorMD5(ACompressor):
+
+    def _compress(self, string):
+        # should this be over-allocated? Probably doesn't matter.
+        charlist = list()
+        str_pos = 0
+        str_len = len(string)
+        alpha_len = len(self.get_alphabet())
+
+        # Accumulate a value for each position that included an entire
+        # neighborhood.
+        while str_pos + self.N < str_len:
+            acc = 0
+            # Starting with no bits set in an accumulator, for each element in
+            # the neighborhood, XOR in the element at a fresh 8-bit position.
+            # Wrap around and keep going if N is long enough to exhaust the 64
+            # bits in a long.
+            acc = int(
+                md5.new(string[str_pos:str_pos + self.N]).hexdigest(), 16)
+            if acc % self.C == 0:
+                indx = acc % alpha_len
+                out_char = self.get_alphabet()[indx]
+                charlist.append(out_char)
+            str_pos = str_pos + 1
+
+        return ''.join(charlist)
