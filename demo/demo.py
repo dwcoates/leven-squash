@@ -110,7 +110,7 @@ def test():
 def demo(f1, ls):
     d = dict()
 
-    files_description = evaluate_file(f1, ls.get_compressor())
+    files_description = assess_file(f1, ls.get_compressor())
     levensquash_description = describe_levensquash(ls)
 
     d["FILES"] = files_description
@@ -119,21 +119,40 @@ def demo(f1, ls):
     return d
 
 
-def evaluate_files(f1, f2, diff_string=None):
+def assess_files(f1, f2, diff_string=None):
     """
     Read in files 'f1' and 'f2' and produce their descriptions. Returns a dict
-    with key FILES consisting of dicts returned by evaluate_file(f1) and
-    evaluate_file(f2), and, if 'diff_string' is provided, with key DIFFERENCE.
+    with key FILES consisting of dicts returned by assess_file(f1) and
+    assess_file(f2), and, if 'diff_string' is provided, with key DIFFERENCE.
     """
     d = dict()
 
     if diff_string is not None:
         d["DIFFERENCE"] = diff_string
 
-    f1_description = evaluate_file(f1)
-    f2_description = evaluate_file(f2)
+    f1_description = assess_file(f1)
+    f2_description = assess_file(f2)
 
     d["FILES"] = dict(f1_description).update(f2_description)
+
+    return d
+
+
+def assess_file(fname, compressor):
+    """
+    Produce a description of the file 'fname' as a set of values, including
+    general description and compression properties. Returns a dict composed of
+    describe_file(fname) and assess_compression(file_text) under keys
+    ATTRIBUTES and COMPRESSION.
+    """
+
+    d = dict()
+    d["ATTRIBUTES"] = describe_file(fname)
+    file_text = d["TEXT"]
+    compression_descriptions = assess_compression(
+        file_text, compressor.getC(), compressor.getN())
+
+    d["COMPRESSION"] = compression_descriptions
 
     return d
 
@@ -232,22 +251,6 @@ def describe_file(fname):
     file_text_description = describe_string(file_text)
 
     d.update(file_text_description)
-
-    return d
-
-
-def evaluate_file(fname, compressor):
-    """
-    Produce a description of the file 'fname' as a set of values. Returns a
-    dict composed of describe_file(fname) and assess_compression(file_text).
-    """
-
-    d = describe_file(fname)
-    file_text = d["TEXT"]
-    compression_descriptions = assess_compression(
-        file_text, compressor.getC(), compressor.getN())
-
-    d["COMPRESSION"] = compression_descriptions
 
     return d
 

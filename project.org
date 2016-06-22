@@ -1,7 +1,7 @@
 * Structure 
 ** Base
 *** Hash
-* Log [85/100]
+* Log [99/128]
   :properties:
   :ID:       b4eabd2c-9602-4a82-9373-fe6d3899e498
   :END:
@@ -444,7 +444,7 @@ outputs "distance" for the python-Levenshtein StringMatcher.distance algorithm
 - Had some errors in the JSON config file that went unnoticed. Fixed, now.
 - Finally. Pushed to github.
 ** DONE Shannon entropy vs. Diversity index
-   CLOCK: [2016-06-13 Sat 14:02]--[2016-06-13 Mon 02:56] => -12:54
+   CLOCK: [2016-06-13 Sat 14:02]--[2016-06-13 Sat 14:40] => 0:38
 - This took some thinking about, but I'm pretty sure that Shannon entropy is what is most relevant.
 Ask Yury
 ** DONE Discuss algorithm
@@ -646,6 +646,9 @@ print("calculated entropy: " + str(calc_ent) +
 ** DONE Modularize LevenSquash
    CLOCK: [2016-06-17 Fri 19:00]--[2016-06-17 Fri 19:40] =>  0:40
 - This is so that the module for computing estimation quality, etc, may be composed from it. It will need to share some of its functionality.
+** TODO Get C compression module to not be broken
+** TODO Refactor compression.py
+- This is accomplished if C compression scheme works.
 *** TODO Debug
     CLOCK: [2016-06-17 Fri 21:10]--[2016-06-17 Fri 22:40] =>  1:30
 ** DONE Debug compression
@@ -658,6 +661,222 @@ print("calculated entropy: " + str(calc_ent) +
 - There a bunch of commits to be made
 - Also some garbage in the repository
 ** TODO Remove normalize
+** DONE LevenSquash should have a proper estimate method
+   CLOCK: [2016-06-18 Sat 20:12]--[2016-06-18 Sat 20:30] =>  0:18
+- scaled by compression factor
+** TODO LevenSquash should have a corrected estimate method
+- improved by a correction factor
+- method is added, needs to be implemented
+** DONE Score should have a similarity method
+   CLOCK: [2016-06-18 Sat 20:34]--[2016-06-18 Sat 21:24] =>  0:50
+- No it shouldnt, this should be in a score module. LevenSquash is just a module for calulating the leven-squash.
+- Added 4 methods. A general static method for computing similarity between strings given a certain algorithm, 
+and three wrapper functions, for absolute, estimated, and corrected estimated.
+** DONE Score includes some method to decide the error between ls.estimate and ls.estimate_corrected
+   CLOCK: [2016-06-19 Sun 18:01]--[2016-06-19 Sun 18:31] =>  0:30
+   CLOCK: [2016-06-18 Sat 21:26]--[2016-06-18 Sat 22:19] =>  0:53
+- Method accepts the strings, produces the absolute, the estimate, and the corrected estimate, and then returns a value between -1 and 1 scoring the improvement of the corrected estimate.
+** TODO Test Score
+   CLOCK: [2016-06-19 Sun 18:34]--[2016-06-19 Sun 20:04] =>  1:30
+** DONE Encountered a deceptive bug
+   CLOCK: [2016-06-19 Sun 20:04]--[2016-06-19 Sun 21:06] =>  1:02
+- for some reason my LS estimates are dog slow. A mere 5x faster than absolute calculation. What's going on?
+- My unit tests reveal that the compression is indeed within a very, very close factor of C. What's going on? That should certainly imply that the speedup rate is within a factor of c^2 
+- Okay, problem was that N and C were being mixed up by default.
+** DONE Finish demo for compression influence on estimate time
+   CLOCK: [2016-06-19 Sun 21:06]--[2016-06-19 Sun 22:19] =>  1:13
+** DONE Update tests
+   CLOCK: [2016-06-19 Sun 22:21]--[2016-06-19 Sun 22:58] =>  0:37
+- Turns out that my entropy and compression tests have not been running recently because `__test__ = false` existed in their base classes
+- Some tests need debugging because of interface changes in source code.
+
+** DONE Manage git repo
+   CLOCK: [2016-06-19 Sun 23:02]--[2016-06-19 Sun 23:36] =>  0:34
+- Organize commits. There should be about 10 or so. 
+** TODO Consider improving design of Score module for efficiency via caching
+   CLOCK: [2016-06-19 Sun 15:10]--[2016-06-19 Sun 18:01] =>  2:51
+   CLOCK: [2016-06-19 Sun 03:03]--[2016-06-19 Sun 03:44] =>  0:41
+   CLOCK: [2016-06-18 Sat 23:45]--[2016-06-19 Sun 00:57] =>  1:12
+   CLOCK: [2016-06-18 Sat 23:25]--[2016-06-18 Sat 23:45] =>  0:20
+- At present, the Score module is set to do lots of redundant calulation.
+- It should probably be slightly changed to cache results. So, the module accepts two strings and a LevenSquash instance on construction, then initializes data to None. When computations are called on, these are computed if relevante data is None, and simply returned otherwise. 
+- Scratch that, obviously it's LevenSquash which should be cached.
+- things to cache:
+  1. signatures and times
+  2. sig distance and time
+  3. string distance and time
+  4. string estimate and time
+  5. string estimate corrected and time
+The strings themselves arent cached, just private instance variables.
+*** TODO Design
+- LevenSquash is composed of a LevenSquashBase module, which is exacltly the current LevenSquash module (that is, it houses all of the leven-squash computation functionality like estimate, estimate_corrected, ect).
+- LevenSquash now wraps LevenSquashBase's public functions, implementing a cache around them. 
+- These wrapper methods call _get_computation, sending it wrapped LSB method and the parameters it recieved. For instance:
+
+#+begin_src python
+class LevenSquash:
+   # ...
+   def estimate(self, str1, str2):
+      return self._get_calculation(self._lsb.estimate, str1, str2)
+   # ...
+#+end_src
+- _get_calculation checks the cache (a hashtable) for the key that is the function name plus the arguments. If it finds it, it returns the value, otherwise it calls the function with the arguments:
+#+begin_src python
+class LevenSquash:
+   # ...
+   def _get_calculation(self, fun, *args):
+      key = fun.__name__ + ' '.join(*args)
+      if key in self._cache:
+          return _cache[key]
+      retval = fun(*args)
+      self._cache[key] = retval
+      return retval
+   # ...
+#+end_src
+- At the moment, going to give it a very short memory. Just two strings. 
+
+** DONE Why is compression so damn slow?
+   CLOCK: [2016-06-20 Mon 01:42]--[2016-06-20 Mon 02:43] =>  1:01
+   CLOCK: [2016-06-20 Mon 01:20]--[2016-06-20 Mon 01:40] =>  0:20
+- The basic compression algorithm 'StringCompressorBasic.compress()' is linear. Why, as per the demo test in compression_time_influence_on_estimation.py, does the compression stage take on the order of 99.99% of the time to execute the estimate? 
+- For simplicity, consider equal length strings of length K. For any practical C (somewhere in the range of 100-250), C^2, the factor by which the computing of the LD of the signatures is faster than that of the LD of the strings, is less than K, usually by around a factor of 2 or so. The complexity of LD is K^2 for equal length strings, so the rough order of the LD computation on signatures is K^2/C^2 which is on the order of 2 or so times bigger than K for general values of C. So why do two of these linear compressions on the same source strings of size K occupy 99.99% of the time? A niave estimate would figure that the signature LD calculation wouid take slightly /more/ time than the compression, not 99.99% less. 
+- I suspect it has to do with the number of modulus calls in the hash process. But, a decently large string, say, sonsisting of 100,000 characters, hashes to less than 1000 characters for even small C (C=100). That's less than 1000 explicit modulus calls. It takes about a quarter of a second to compress a single 100,000 character string, as per my tests.
+- Hmm, the aforementioned about the modulus calls with only 1/C frequency is of course utterly wrong. It's done in addition N*K times, where N is the neighborhood size, and K is the length of the string being compressed. I'm going to write a test to help me narrow down the costliest parts of this algorithm.
+- This helper function is 'time_compression' in the above mentioned module.
+- With some limited tests, it seems that comnmenting out the outter modulus calls (the ones that shift the bits of the neighborhood to be XOR'd into the accumulator) improve the speed by about 50% (tests showed that a ~2.65s compression calculation was reduced to ~1.77s). 
+- Eliminating the 1/C frequent process of adding a character to the output signature (which involed a modulus on every iteration to check the condition, then, with 1/C frequency, performs an additional modulus to select an output character from the alphabet, then adds the character to a list of characters to later be concatenated into the returned signature string) showed neglibile improvement speed (~2.65s calculation was reduced to 2.47, a 7% improvement).
+- Eliminating the final joining of roughly K/C characters in a list to a string also has negligible effect on speed, about 1.5% improvement(computations taking ~2.65s were reduced to ~2.61s)
+- The mystery remains, as it would appear that none of the obvious factors are very considerable. That is, it's not the modulus calls. In fact, the elimination of all modulus calls, as well as all string concatenation does not grant even a 60% improvement in speed, which would still be an amount of time in compression dwarfing time spend in signature LD calculation.
+- Changing the for loop to use xrange(N) instead of range(0,N) afforded about a 6.5% speedup. Which is an optimization free of charge, but not very consequential.
+- It may prove a decent optimaization to lessen the number of bits in the accumulator. This minimizes the number of divisions performed, and at present, 56 bits is excessive. The collision probability that 56 bits afford is infitisimally small.
+** TODO Read about binomial distribution
+** DONE Consider whether lessening accumulator size in compressor is a worthwhile optimizataion
+   CLOCK: [2016-06-20 Mon 23:34]--[2016-06-20 Mon 23:58] => 0:24
+- It isn't.
+** TODO A very interesting conjecture:
+   CLOCK: [2016-06-18 Sat 20:06]--[2016-06-18 Sat 20:12] =>  0:06
+   CLOCK: [2016-06-18 Sat 19:45]--[2016-06-18 Sat 20:05] =>  0:20
+*** Premise:
+- one might think immediately that the way to produce this estimate is to calculate the distance between two signatures, then scale this distance by the correction factor, and finished; this produces the estimated distance. However, consider the following reasoning: signatures have high entropy than input strings, that is, higher randomness of characters, and therefore the LD between signatures is higher than between source strings relative to their respective lengths.
+*** Expressing correction factor as a function of entropy
+Is it true, therefore, that the correction factor can be produced as a function of the entropy of signature vs. entropy of input strings (english literature text, for example).
+** TODO Make LDAlgorithm a functor
+** TODO another (very cool) little change
+** DONE The C code is slower than Python code??
+   CLOCK: [2016-06-20 Mon 20:21]--[2016-06-20 Mon 21:50] => 0:29
+- Tests showed it's about 30% slower or so. Why?
+- Guessing it has to do with the K function calls. Proabably should wrap the core of the compression in a C function.
+** DONE Write C version of compression core
+   CLOCK: [2016-06-20 Mon 21:50]--[2016-06-20 Mon 23:01] => 1:11
+** DONE Create a git repository for compression
+   CLOCK: [2016-06-20 Mon 23:01]--[2016-06-20 Mon 23:32] => 0:31
+
+** TODO Update C code
+** TODO Write main demo
+   CLOCK: [2016-06-22 Wed 03:40]--[2016-06-22 Wed 06:32] =>  2:52
+   CLOCK: [2016-06-22 Wed 03:24]--[2016-06-22 Wed 03:35] =>  0:11
+   CLOCK: [2016-06-22 Wed 00:25]--[2016-06-22 Wed 01:33] => 1:08
+** DONE Demo organization
+   CLOCK: [2016-06-22 Wed 02:50]--[2016-06-22 Wed 03:24] =>  0:34
+   CLOCK: [2016-06-22 Wed 01:33]--[2016-06-22 Wed 02:49] => 1:16
+- Returned value from demo is an organized dictionary containing statistics
++ TOP
+  + FILENAMES
+    + FILE 1
+      + FILENAME
+      + TEXT
+      + DESCRIPTION
+      + ENTROPY
+      + LENGTH
+      + COMPRESSION
+        + BASIC
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + CRC
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + C BASIC
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + MD5
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+    + FILE 2
+      + FILENAME
+      + TEXT
+      + DESCRIPTION
+      + ENTROPY
+      + LENGTH
+      + COMPRESSION
+        + BASIC
+          + TEXT
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + CRC
+          + TEXT
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + C BASIC
+          + TEXT
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+        + MD5
+          + TEXT
+          + TIME
+          + ENTROPY
+          + LENGTH
+          + SIMILARITY (to len(string)/C)
+  + LEVENSQUASH
+    + COMPRESSOR
+      + DEFAULT VALUE (current compressor module)
+      + COMPRESSION FACTOR
+      + NEIGHBORHOOD SIZE
+    + LD ALGORITHM
+      + DEFAULT VALUE
+  + RESULTS
+    + STRINGS (one entry for each of the two strings)
+      + DESCRIPTION
+      + STRING ENTROPY
+    + METRICS
+      + ABSOLUTE
+        + VALUE
+        + SPEED
+        + SIMILARITY
+      + ESTIMATE
+        + VALUE
+        + SPEED
+        + SIMILARITY
+          + VALUE
+          + ERROR
+      + CORRECTED ESTIMATE
+        + VALUE
+        + CORRECTION FACTORS
+        + SPEED
+        + SIMILARITY
+          + VALUE
+          + ERROR
+        + IMPROVEMENT (over ESTIMATE)
+** TODO Encapsulate demo in class
+** TODO Write Demo.process() method
+- this method analyses the output of an evaluation. For example, part of process() would be 
+inspecting compress functions for bad values. Or checking for remarkably bad corrected estimates.
+** DONE Should there be Demo save and load methods?
+- this demo will be run on very large strings over many values of N and C. It will take many hours to complete a full execution. Therefore, it may be necessary to save the computation, else all is lost if the environment crashes (which happens /constantly/ on this machine).
+
 * Tasks [3/6]
 ** TODO Why are the named constructors for hashlib much faster than using new?
    DEADLINE: <2016-05-01 Sun>
@@ -691,7 +910,6 @@ and should be preferred."
    CLOCK: [2016-06-05 Sun 01:28]--[2016-06-05 Sun 02:12] =>  0:44
 - Interestingly, this substantially sized project has no traces of logging usage: https://github.com/pybuilder/pybuilder.
 - Reading about loggers on this documentation page after browsing the source on github: http://doc.scrapy.org/en/latest/topics/logging.html.
-
 * TBD Features and Ideas
 - Possible features to be added
 ** Markov Chain to estimate entropy for English text
@@ -739,6 +957,8 @@ What is the correct way for returning the information I'd like? That is, the ori
 *** TODO Unit testing in python 
 https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-testing/
 ** Problem [0/0]
+*** Can a correction factor be computed as a function of entropy?
+[[Expressing correction factor as a function of entropy]]
 ** Underlying Concepts
 *** Near-Duplication
 **** A Stanford paper on near-duplication w/ shingling
@@ -776,12 +996,12 @@ https://jeffknupp.com/blog/2013/12/09/improve-your-python-understanding-unit-tes
 **** TODO Write tests for low entropy, high entropy
      DEADLINE: <2016-06-11 Sat>
 ** Meeting 4
-   CLOCK: [2016-06-10 Fri 11:01]--[2016-06-10 Fri 2:10] => 03:09
+   CLOCK: [2016-06-10 Fri 11:01]--[2016-06-10 Fri 2:10] => 3:09
 - Talked about entropy
 - Discussed the algorithm and some of its possible weaknesses.
 -
 ** Meeting 5
-   CLOCK: [2016-06-13 Mon 11:02]--[2016-06-13 Mon 14:37] => 03:32
+   CLOCK: [2016-06-13 Mon 11:02]--[2016-06-13 Mon 14:37] => 3:32
 *** Idea for having a large alphabet and sorting the output
 - unicode might be too small of an alphabet to minimize collisions. Could be better to take only some of the 
 bits of the hash on the neighborhood.
@@ -795,7 +1015,7 @@ bits of the hash on the neighborhood.
   - function to calculate distribution
 ***** framework for testing entropy
   - test dependence on hash
-  - function to run on varying N and C range
+  - function to run on varying K and C range
 ***** some samples
 ***** New idea for similarity metric
   - implement
@@ -805,4 +1025,18 @@ bits of the hash on the neighborhood.
   - Need to use a levenshtein computation that doesnt take up a lot of memory
 ** Meeting 6
    DEADLINE: <2016-06-17 Fri>
+   CLOCK: [2016-06-18 Sat 14:04]--[2016-06-18 Sat 19:42] =>  5:38
+- talked at length about the average similarity problem. Eventually the bug was resolved to fit our math. It had to do with a couple of factors.
+- Decided how to produce a good estimate of the levenshtein using a compression factor. The entropy of the output signatures is different than the input english, so we can assume that the relative distance is greater on average. So multiplying by a compression factor to re-adjust the estimate would be better for estimates.
+- Outlined some good approaches to desigining a score module
 
+** Meeting 7
+   CLOCK: [2016-06-20 Mon 17:01]--[2016-06-20 Mon 22:26] =>  5:25
+- Code review
+- Assignment
+- Revised program structure
+- Rewrote the compressor in C
+- NOTE, why did we put the compressor C code in a different repository?
+
+
+Sexual tension is a social phenomenon that occurs when two individuals interact and one or both feel sexual desire, but the consummation is postponed or never happens. A common scenario is where the two individuals function in close proximity, such as co-workers or in a group of friends, but do not have sex to avoid awkwardness or for other reasons. Another common scenario is when two people's attraction is limited to physical., with. there being no emotional attraction
