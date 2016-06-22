@@ -20,5 +20,5 @@ setup(
                   'demo.data': ['*.txt']},
     url='NONE',
     license='LICENSE',
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('docs'))
 )
