@@ -3,6 +3,7 @@ import binascii
 import md5
 
 from levenshtein.utils import alphabet
+from compressor import basic
 
 
 class ACompressor:
@@ -55,6 +56,9 @@ class ACompressor:
             raise TypeError("'alphabet' provided is not a string.")
 
     def compress(self, string):
+        """
+        Compress 'string' into a signature of length 1/C.
+        """
         if self.C <= 0 or self.N <= 0:
             warning = '%s%s' % (type(self).__name__,
                                 '.compress(string) has received ' +
@@ -72,93 +76,81 @@ class ACompressor:
         raise NotImplementedError('ACompressor does not implement a ' +
                                   'compression algorithm.')
 
-
-class StringCompressorBasic (ACompressor):
-    """A basic compressor using a simple, fast algorithm."""
-    # log = Logger.getLogger(StringCompressorBasic)
-
-    # TODO Revisit this. It looks correct, but it takes n steps at each
-    # position.
-    def _compress(self, string):
-        # should this be over-allocated? Probably doesn't matter.
-        charlist = list()
+    def _core(self, string):
+        sig = list()
         str_pos = 0
         str_len = len(string)
-        alpha_len = len(self.get_alphabet())
 
-        # Accumulate a value for each position that included an entire
-        # neighborhood.
         while str_pos + self.N < str_len:
-            acc = 0
-            # Starting with no bits set in an accumulator, for each element in
-            # the neighborhood, XOR in the element at a fresh 8-bit position.
-            # Wrap around and keep going if N is long enough to exhaust the 64
-            # bits in a long.
-            for i in xrange(self.N):
-                val = ord(string[str_pos + i])
-                # val<<=i*8%64
-                val <<= i * 8 % 56
-                acc ^= val
-                acc = abs(acc)
-            if acc % self.C == 0:
-                indx = acc % alpha_len
-                out_char = self.get_alphabet()[indx]
-                charlist.append(out_char)
+            h = self._hash_neighborhood(string, str_pos, self.N)
+            self._add_char(sig, h)
             str_pos = str_pos + 1
 
-        return ''.join(charlist)
+        return ''.join(sig)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        raise NotImplementedError("The '" + self.__class__.__name__ +
+                                  "' compressor module has not implemented " +
+                                  "_hash_neighborhood.")
+
+    def _add_char(self, signature, _hash):
+        """
+        Accept a list of characters 'signature' and append a random character
+        from alphabet with 1/C liklihood. This is a function of '_hash'. That
+        is, identical values of '_hash' must always add the same character.
+        """
+        alpha_len = len(self.get_alphabet())
+
+        if _hash % self.C == 0:
+            indx = _hash % alpha_len
+            char = self.get_alphabet()[indx]
+            signature.append(char)
+
+
+class StringCompressorBasic (ACompressor):
+    """
+    A basic compressor using a simple, fast algorithm.
+    """
+    # log = Logger.getLogger(StringCompressorBasic)
+
+    def _compress(self, string):
+        return self._core(string)
+
+    def _hash_neighborhood(string, str_pos, N):
+        acc = 0
+        for i in xrange(N):
+            val = ord(string[str_pos + i])
+            val <<= i * 8 % 56
+            acc ^= val
+            acc = abs(acc)
+
+        return acc
 
 
 class StringCompressorCRC(ACompressor):
 
     def _compress(self, string):
-        # should this be over-allocated? Probably doesn't matter.
-        charlist = list()
-        str_pos = 0
-        str_len = len(string)
-        alpha_len = len(self.get_alphabet())
+        return self._core(string)
 
-        # Accumulate a value for each position that included an entire
-        # neighborhood.
-        while str_pos + self.N < str_len:
-            acc = 0
-            # Starting with no bits set in an accumulator, for each element in
-            # the neighborhood, XOR in the element at a fresh 8-bit position.
-            # Wrap around and keep going if N is long enough to exhaust the 64
-            # bits in a long.
-            acc = binascii.crc32(string[str_pos:str_pos + self.N]) + 2**32
-            if acc % self.C == 0:
-                indx = acc % alpha_len
-                out_char = self.get_alphabet()[indx]
-                charlist.append(out_char)
-            str_pos = str_pos + 1
-
-        return ''.join(charlist)
+    def _hash_neighborhood(string, str_pos, N):
+        return binascii.crc32(string[str_pos:str_pos + N]) + 2**32
 
 
 class StringCompressorMD5(ACompressor):
 
     def _compress(self, string):
-        # should this be over-allocated? Probably doesn't matter.
-        charlist = list()
-        str_pos = 0
-        str_len = len(string)
-        alpha_len = len(self.get_alphabet())
+        return self._core(string)
 
-        # Accumulate a value for each position that included an entire
-        # neighborhood.
-        while str_pos + self.N < str_len:
-            acc = 0
-            # Starting with no bits set in an accumulator, for each element in
-            # the neighborhood, XOR in the element at a fresh 8-bit position.
-            # Wrap around and keep going if N is long enough to exhaust the 64
-            # bits in a long.
-            acc = int(
-                md5.new(string[str_pos:str_pos + self.N]).hexdigest(), 16)
-            if acc % self.C == 0:
-                indx = acc % alpha_len
-                out_char = self.get_alphabet()[indx]
-                charlist.append(out_char)
-            str_pos = str_pos + 1
+    def _hash_neighborhood(string, str_pos, N):
+        return int(md5.new(string[str_pos:str_pos + N]).hexdigest(), 16)
 
-        return ''.join(charlist)
+
+class StringCompressorCBasic(ACompressor):
+
+    def _compress(self, string):
+        # this will probably have to be Swig C call
+        # return compressor.core(string, my_C_hash_n, my_C_add_char)
+        return self._core(string)
+
+    def _hash_neighborhood(string, str_pos, N):
+        return basic(string, str_pos, N)
