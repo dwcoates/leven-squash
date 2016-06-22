@@ -1,5 +1,9 @@
+import pprint
+
 import time
 import levenshtein
+from levenshtein.utils.entropy import ShannonBasic
+from levenshtein.score import ScoreDistance
 
 
 # + TOP
@@ -93,12 +97,26 @@ import levenshtein
 #         + IMPROVEMENT (over ESTIMATE)
 
 
-def demo():
-    start = time.clock()
-    results = evaluate(f1, f2, LevenSquash())
-    end = time.clock()
-    t2 = end - start
-    pass
+def test():
+    # throeaway test
+    from levenshtein.leven_squash import LevenSquash
+    ls = LevenSquash()
+
+    pp = pprint.PrettyPrinter(indent=4)
+
+    pp.pprint(demo("data/test.txt", ls))
+
+
+def demo(f1, ls):
+    d = dict()
+
+    files_description = evaluate_file(f1, ls.get_compressor())
+    levensquash_description = describe_levensquash(ls)
+
+    d["FILES"] = files_description
+    d["LEVENSQUASH MODULE"] = levensquash_description
+
+    return d
 
 
 def evaluate_files(f1, f2, diff_string=None):
@@ -196,7 +214,7 @@ def describe_string(string):
 
     d["LENGTH"] = len(string)
 
-    sb = levenshtein.utils.entropy.ShannonBasic()
+    sb = ShannonBasic()
     ent = sb.calculate(string)
     d["ENTROPY"] = ent
 
@@ -218,7 +236,7 @@ def describe_file(fname):
     return d
 
 
-def evaluate_file(fname, ls):
+def evaluate_file(fname, compressor):
     """
     Produce a description of the file 'fname' as a set of values. Returns a
     dict composed of describe_file(fname) and assess_compression(file_text).
@@ -227,9 +245,9 @@ def evaluate_file(fname, ls):
     d = describe_file(fname)
     file_text = d["TEXT"]
     compression_descriptions = assess_compression(
-        file_text), ls.getC(), ls.getN()
+        file_text, compressor.getC(), compressor.getN())
 
-    d.update(compression_descriptions)
+    d["COMPRESSION"] = compression_descriptions
 
     return d
 
@@ -238,6 +256,18 @@ def assess_compression(string, C, N):
     """
     Produce data on the various compressors acting on string.
     """
+    d = dict()
+
+    d["BASIC"] = describe_compression(
+        string, levenshtein.compression.StringCompressorBasic(C, N))
+    d["C BASIC"] = describe_compression(
+        string, levenshtein.compression.StringCompressorCBasic(C, N))
+    d["CRC"] = describe_compression(
+        string, levenshtein.compression.StringCompressorCRC(C, N))
+    d["BASIC"] = describe_compression(
+        string, levenshtein.compression.StringCompressorMD5(C, N))
+
+    return d
 
 
 def describe_compression(string, compressor):
