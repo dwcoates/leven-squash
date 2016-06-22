@@ -2,6 +2,97 @@ import time
 import levenshtein
 
 
+# + TOP
+#   + FILENAMES
+#     + FILE 1
+#       + FILENAME
+#       + TEXT
+#       + DESCRIPTION
+#       + ENTROPY
+#       + LENGTH
+#       + COMPRESSION
+#         + BASIC
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + CRC
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + C BASIC
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + MD5
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#     + FILE 2
+#       + FILENAME
+#       + TEXT
+#       + DESCRIPTION
+#       + ENTROPY
+#       + LENGTH
+#       + COMPRESSION
+#         + BASIC
+#           + TEXT
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + CRC
+#           + TEXT
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + C BASIC
+#           + TEXT
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#         + MD5
+#           + TEXT
+#           + TIME
+#           + ENTROPY
+#           + LENGTH
+#           + ACCURACY (to len(string)/C)
+#   + LEVENSQUASH
+#     + COMPRESSOR
+#       + TYPE (current compressor module)
+#       + DESCRIPTION
+#       + COMPRESSION FACTOR
+#       + NEIGHBORHOOD SIZE
+#     + LD ALGORITHM
+#       + TYPE
+#       + DESCRIPTION
+#   + RESULTS
+#     + METRICS
+#       + ABSOLUTE
+#         + VALUE
+#         + SPEED
+#         + SIMILARITY
+#       + ESTIMATE
+#         + VALUE
+#         + SPEED
+#         + SIMILARITY
+#           + VALUE
+#           + ERROR
+#       + CORRECTED ESTIMATE
+#         + VALUE
+#         + CORRECTION FACTORS
+#         + SPEED
+#         + SIMILARITY
+#           + VALUE
+#           + ERROR
+#         + IMPROVEMENT (over ESTIMATE)
+
+
 def demo():
     start = time.clock()
     results = evaluate(f1, f2, LevenSquash())
