@@ -116,7 +116,7 @@ class StringCompressorBasic (ACompressor):
     def _compress(self, string):
         return self._core(string)
 
-    def _hash_neighborhood(string, str_pos, N):
+    def _hash_neighborhood(self, string, str_pos, N):
         acc = 0
         for i in xrange(N):
             val = ord(string[str_pos + i])
@@ -132,7 +132,7 @@ class StringCompressorCRC(ACompressor):
     def _compress(self, string):
         return self._core(string)
 
-    def _hash_neighborhood(string, str_pos, N):
+    def _hash_neighborhood(self, string, str_pos, N):
         return binascii.crc32(string[str_pos:str_pos + N]) + 2**32
 
 
@@ -141,7 +141,7 @@ class StringCompressorMD5(ACompressor):
     def _compress(self, string):
         return self._core(string)
 
-    def _hash_neighborhood(string, str_pos, N):
+    def _hash_neighborhood(self, string, str_pos, N):
         return int(md5.new(string[str_pos:str_pos + N]).hexdigest(), 16)
 
 
@@ -152,5 +152,5 @@ class StringCompressorCBasic(ACompressor):
         # return compressor.core(string, my_C_hash_n, my_C_add_char)
         return self._core(string)
 
-    def _hash_neighborhood(string, str_pos, N):
+    def _hash_neighborhood(self, string, str_pos, N):
         return basic(string, str_pos, N)
