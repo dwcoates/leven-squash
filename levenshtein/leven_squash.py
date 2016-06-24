@@ -45,6 +45,18 @@ class LevenSquash:
         logger.info("Configured leven-squash with %s LD algorithm.",
                     self._dist_alg.__class__.__name__)
 
+    def setN(self, n):
+        self.get_compressor().setN(n)
+
+    def getN(self):
+        return self.get_compressor().getN()
+
+    def setC(self, c):
+        self.get_compressor().setC(c)
+
+    def getC(self):
+        return self.get_compressor().getC()
+
     def get_compressor(self):
         return self._sc
 
@@ -147,6 +159,7 @@ class LevenSquash:
 
 
 class LevenSquasher:
+
     def __init__(self, str1, str2, ls=LevenSquash()):
         # hmm
         #self.log = logging.getLogger()
