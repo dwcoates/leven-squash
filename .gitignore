@@ -22,3 +22,8 @@ levenshtein/compression.pyc
 /levenshtein/utils/errors.log
 *log
 *org
+/compressor.py
+/_compressor.so
+/levenshtein/_compression.so
+/levenshtein/_compressor.so
+/levenshtein/compressor.py
