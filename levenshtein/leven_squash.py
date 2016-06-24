@@ -11,7 +11,7 @@ if __name__ == '__main__':
 logger = logging.getLogger(__name__)
 
 
-class LevenSquash:
+class LevenSquash():
     # Amount by which the LD of a pair of equal length random text strings is
     # smaller than their length. This is used to fudge the product of
     # signature LD and compression factor to adjust the expectation.
