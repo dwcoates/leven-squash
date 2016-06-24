@@ -1,158 +1,198 @@
 import pprint
-
+import pickle
 import time
+
 import levenshtein
+from levenshtein.leven_squash import LevenSquash
 from levenshtein.utils.entropy import ShannonBasic
 from levenshtein.score import ScoreDistance
 
 
 # + TOP
-#   + FILENAMES
-#     + FILE 1
+#   + FILES
+#     + *file name* (first file)
 #       + FILENAME
-#       + TEXT
 #       + DESCRIPTION
-#       + ENTROPY
-#       + LENGTH
-#       + COMPRESSION
-#         + BASIC
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + CRC
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + C BASIC
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + MD5
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#     + FILE 2
+#       + CONTENT
+#         + TEXT
+#         + ENTROPY
+#         + LENGTH
+#     + *file name* (second file)
 #       + FILENAME
-#       + TEXT
 #       + DESCRIPTION
-#       + ENTROPY
-#       + LENGTH
-#       + COMPRESSION
-#         + BASIC
-#           + TEXT
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + CRC
-#           + TEXT
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + C BASIC
-#           + TEXT
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#         + MD5
-#           + TEXT
-#           + TIME
-#           + ENTROPY
-#           + LENGTH
-#           + ACCURACY (to len(string)/C)
-#   + LEVENSQUASH
-#     + COMPRESSOR
-#       + TYPE (current compressor module)
-#       + DESCRIPTION
-#       + COMPRESSION FACTOR
-#       + NEIGHBORHOOD SIZE
-#     + LD ALGORITHM
-#       + TYPE
-#       + DESCRIPTION
-#   + RESULTS
-#     + METRICS
+#       + CONTENT
+#         + TEXT
+#         + ENTROPY
+#         + LENGTH
+#   + COMPRESSION
+#     [
+#     . . .
+#     . . .
+#       + *file name* (first file)
+#         + N
+#         + C
+#         + RESULTS
+#           + BASIC
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + CRC
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + C BASIC
+#             + TIME
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + MD5
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#       + *file name* (second file)
+#         + N
+#         + C
+#         + RESULTS
+#           + BASIC
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + CRC
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + C BASIC
+#             + TIME
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#           + MD5
+#             + SIGNATURE
+#               + TEXT
+#               + ENTROPY
+#               + LENGTH
+#             + TIME
+#             + ACCURACY (to len(string)/C)
+#     . . .
+#     . . .
+#     ]
+#   + DISTANCE
 #       + ABSOLUTE
 #         + VALUE
 #         + SPEED
-#         + SIMILARITY
+#         + DIFFERENCE
+#   + ESTIMATATION
+#     [
+#     . . .
+#     . . .
+#       + LEVENSQUASH
+#         + COMPRESSOR
+#           + TYPE (current compressor module)
+#           + DESCRIPTION
+#           + C
+#           + N
+#         + LD ALGORITHM
+#           + TYPE
+#           + DESCRIPTION
 #       + ESTIMATE
 #         + VALUE
 #         + SPEED
-#         + SIMILARITY
-#           + VALUE
-#           + ERROR
+#         + DIFFERENCE
+#         + ERROR
 #       + CORRECTED ESTIMATE
 #         + VALUE
 #         + CORRECTION FACTORS
 #         + SPEED
-#         + SIMILARITY
-#           + VALUE
-#           + ERROR
-#         + IMPROVEMENT (over ESTIMATE)
+#         + DIFFERENCE
+#         + ERROR
+#         + IMPROVEMENT
+#       + SIMILARITY
+#         + TBD
+#     . . .
+#     . . .
+#     ]
+
+def parse_file(fname):
+    """
+    Read file, and parse for description and text. Returns tuple with elements
+    (text, description)
+    """
+    with open(fname) as f:
+        text = f.read().replace('\n', '')
+
+    # Currently just returns file text
+    description = ""
+
+    return (text, description)
 
 
-def test():
-    # throeaway test
-    from levenshtein.leven_squash import LevenSquash
-    ls = LevenSquash()
-
-    pp = pprint.PrettyPrinter(indent=4)
-
-    pp.pprint(demo("data/test.txt", ls))
-
-
-def demo(f1, ls):
+def assess_estimation(sd):
+    """
+    Produce a set of statistics on the difference between the two strings,
+    'str1' and 'str2', using different measures. Returns a dict composed of
+    describe_levenshquash(ls) and assess_distance_measures(str1, str2, ls)
+    under keys "LEVENSQUASH MODULE" and "DISTANCE"
+    """
     d = dict()
 
-    files_description = assess_file(f1, ls.get_compressor())
-    levensquash_description = describe_levensquash(ls)
+    d["LEVENSQUASH MODULE"] = describe_levensquash(sd.get_leven_squash())
+    d["ESTIMATE"] = describe_measure(LevenSquash.estimate, sd)
+    d["CORRECTED"] = describe_measure(LevenSquash.estimate_corrected, sd)
+    return d
 
-    d["FILES"] = files_description
-    d["LEVENSQUASH MODULE"] = levensquash_description
+
+def describe_file(fname):
+    """
+    Produce an assessment of the file 'fname' as a set of values. Returns a
+    dict composed of describe_file(fname) and describe_compression(file_text)
+    under keys ATTRIBUTES and COMPRESSION.
+    """
+    d = dict()
+
+    file_contents = parse_file(fname)
+    file_text = file_contents[0]
+    file_description = file_contents[1]
+
+    d["PATH"] = fname
+    d["DESCRIPTION"] = file_description
+    d["CONTENT"] = describe_string(file_text)
 
     return d
 
 
-def assess_files(f1, f2, diff_string=None):
+def describe_files(f1, f2, diff_string="NOT SPECIFIED"):
     """
-    Read in files 'f1' and 'f2' and produce their descriptions. Returns a dict
-    with key FILES consisting of dicts returned by assess_file(f1) and
-    assess_file(f2), and, if 'diff_string' is provided, with key DIFFERENCE.
+    Read in files 'f1' and 'f2' and produce their assessment. Returns a dict
+    with key DIFFERENCE and key FILES, consisting of dicts returned by
+    describe_file(f1) and describe_file(f2).
     """
     d = dict()
 
-    if diff_string is not None:
-        d["DIFFERENCE"] = diff_string
+    d["DIFFERENCE"] = diff_string
 
-    f1_description = assess_file(f1)
-    f2_description = assess_file(f2)
-
-    d["FILES"] = dict(f1_description).update(f2_description)
-
-    return d
-
-
-def assess_file(fname, compressor):
-    """
-    Produce a description of the file 'fname' as a set of values, including
-    general description and compression properties. Returns a dict composed of
-    describe_file(fname) and assess_compression(file_text) under keys
-    ATTRIBUTES and COMPRESSION.
-    """
-
-    d = dict()
-    d["ATTRIBUTES"] = describe_file(fname)
-    file_text = d["TEXT"]
-    compression_descriptions = assess_compression(
-        file_text, compressor.getC(), compressor.getN())
-
-    d["COMPRESSION"] = compression_descriptions
+    d[f1] = describe_file(f1)
+    d[f2] = describe_file(f2)
 
     return d
 
@@ -166,11 +206,8 @@ def describe_levensquash(ls):
     """
     d = dict()
 
-    compressor_description = describe_compressor(ls.get_compressor())
-    algorithm_description = describe_LD_algorithm(ls.get_ld_alg())
-
-    d["COMPRESSOR"] = compressor_description
-    d["LD ALGORITHM"] = algorithm_description
+    d["COMPRESSOR"] = describe_compressor(ls.get_compressor())
+    d["DISTANCE ALGORITHM"] = describe_LD_algorithm(ls.get_ld_alg())
 
     return d
 
@@ -207,23 +244,6 @@ def describe_LD_algorithm(algorithm):
     return d
 
 
-def parse_file(fname):
-    """
-    Read file, and parse for description and text. Returns dict with keys
-    FILENAME, TEXT and DESCRIPTION.
-    """
-    d = dict()
-    d["FILENAME"] = fname
-
-    with open(fname) as f:
-        d["TEXT"] = f.read().replace('\n', '')
-
-    # Currently just returns file text
-    d["DESCRIPTION"] = ""
-
-    return d
-
-
 def describe_string(string):
     """
     Produce a set of basic attributes of the string 'string'. Returns a dict
@@ -231,49 +251,42 @@ def describe_string(string):
     """
     d = dict()
 
+    d["TEXT"] = string
     d["LENGTH"] = len(string)
-
-    sb = ShannonBasic()
-    ent = sb.calculate(string)
-    d["ENTROPY"] = ent
+    d["ENTROPY"] = ShannonBasic().calculate(string)
 
     return d
 
 
-def describe_file(fname):
-    """
-    Produce a description of the file 'fname' as a set of values. Returns a
-    dict composed of parse_file(fname) and describe_string(file_text)
-    """
-
-    d = parse_file(fname)
-    file_text = d["TEXT"]
-    file_text_description = describe_string(file_text)
-
-    d.update(file_text_description)
-
-    return d
-
-
-def assess_compression(string, C, N):
+def describe_compression(string, C, N):
     """
     Produce data on the various compressors acting on string.
     """
     d = dict()
 
-    d["BASIC"] = describe_compression(
+    d["C"] = C
+    d["N"] = N
+    d["COMPRESSION"] = assess_compressors(string, C, N)
+
+    return d
+
+
+def assess_compressors(string, C, N):
+    d = dict()
+
+    d["BASIC"] = assess_compressor(
         string, levenshtein.compression.StringCompressorBasic(C, N))
-    d["C BASIC"] = describe_compression(
+    d["C BASIC"] = assess_compressor(
         string, levenshtein.compression.StringCompressorCBasic(C, N))
-    d["CRC"] = describe_compression(
+    d["CRC"] = assess_compressor(
         string, levenshtein.compression.StringCompressorCRC(C, N))
-    d["BASIC"] = describe_compression(
+    d["BASIC"] = assess_compressor(
         string, levenshtein.compression.StringCompressorMD5(C, N))
 
     return d
 
 
-def describe_compression(string, compressor):
+def assess_compressor(string, compressor):
     """
     Produce data on compressor 'compressor' acting on 'string'. Returns a dict
     with keys 'TIME' and 'ACCURACY' composed with a dict returned by
@@ -286,96 +299,57 @@ def describe_compression(string, compressor):
     end = time.clock()
     t = end - start
 
-    d["TEXT"] = sig
-
-    d["TIME"] = t
-
     sig_description = describe_string(sig)
-    d.update(sig_description)
 
-    difference = levenshtein.score.ScoreDistance.difference
+    difference = ScoreDistance.difference
     accuracy = difference(sig_description["LENGTH"],
-                          (1 / float(compressor.getC())))
+                          (len(string) / float(compressor.getC())))
 
+    d["SIGNATURE"] = sig_description
+    d["TIME"] = t
     d["ACCURACY"] = accuracy
 
     return d
 
 
-def describe_ls_module(ls):
+def assess_string(string, compressor):
     """
-    Returns a description of LevenSquash module 'ls' as a set of values.
-    """
-
-    # Returns TOP/LEVENSQUASH
-
-    pass
-
-
-def compare_strings(str1, str2, ls):
-    """
-    Produce a set of statistics on the difference between the two strings,
-    'str1' and 'str2', using different measures. Returns a dict composed of
-    assess_distance_measures(str1, str2, ls)
+    Produce a set of statistics on the string 'string'. Returns a dict
+    composed ofdescribe_string(string) and
+    describe_compression(string, compressor) under keys COMPRESSION and
+    ATTRIBUTES.
 
     """
+    d = describe_string(string)
 
-    # Returns TOP/RESULTS/METRICS
+    d["COMPRESSION"] = describe_compression(
+        string, compressor.getC(), compressor.getN())
 
-    pass
+    return d
 
 
-def assess_string(string):
+def describe_measure(measure, sd):
     """
-    Return a set of statistics on the string 'string'. This includes, length,
-    entropy, description, and effects of compression on the string.
+    Produce a set of statistics on ls.calculate(). Returns a dict with keys
+    VALUE, SPEED, SIMILARITY
     """
-    pass
+    d = dict()
+    diff = ScoreDistance.difference
+    m = measure.__name__
 
+    d["VALUE"] = sd.value(m)
+    d["TIME"] = sd.time(m)
+    d["ERROR"] = diff(sd.value(m), sd.value("calculate"))
 
-def assess_compressors(string):
-    """
-    Return a set of statistics on the compression string 'string' using the
-    various compressors.
-    """
-
-    # Calls assess_compressor
-    pass
-
-
-def assess_compressor(string, compressor):
-    """
-    Return a set of statistics on the compression string 'string' using
-    compressor 'compressor'.
-    """
-
-    pass
-
-
-def assess_distance_measures(str1, str2, ls):
-    """
-    Return a set of statistics on various distance evaluations for 'str1'.
-    and 'str2'. This includes, length, and entropy.
-    """
-    pass
-
-
-def dist_measure_statistics(str1, str2, measure):
-    """
-    Return a set of statistics on distance calculation 'measure' for 'str1'.
-    and 'str2'. This includes value, speed, and measured similarity.
-    """
-
-    # Called by assess_calculate, assess_estimate, assess_estimate_corrected
-
-    pass
+    return d
 
 
 def assess_calculate(str1, str2, ls):
     """
-    Return a set of statistics on ls.calculate().
+    Produce a set of statistics on ls.calculate(). Returns a dict with keys
+    VALUE, SPEED, SIMILARITY
     """
-    pass
+    return describe_measure(str1, str2, ls.calculate)
 
 
 def assess_estimate(str1, str2, ls):
@@ -383,6 +357,16 @@ def assess_estimate(str1, str2, ls):
     Return a set of statistics on ls.estimate(). Also specifies value of
     similarity and error of similarity value.
     """
+    d = describe_measure(str1, str2, ls.estimate)
+
+    start = time.clock()
+    exact = ls.calculate()
+    end = time.clock()
+    t_exact = end - start
+
+    d["SPEEDUP"] = ScoreDistance.difference(d["TIME"], t_exact)
+    d["ACCURACY"] = ScoreDistance.difference(d["VALUE"], exact)
+
     pass
 
 
@@ -395,23 +379,155 @@ def assess_estimate_corrected(str1, str2, ls):
     pass
 
 
-def assess_compressors(string):
-    """
-    Return a dict comprised of assessments on all implemented compressors.
-    """
-    pass
+################################################
+##############    TEST FUNCTIONS ###############
+################################################
 
 
-def assess_compressor(string, compressor):
-    """
-    Return a set of statistics on the compression quality of 'compressor' on
-    'string'. Returns information on entropy of input / output, signature length,
-    speed, etc.
-    """
-    pass
+def test():
+    # throeaway test
+    from levenshtein.leven_squash import LevenSquash
+    t = 0
+    d = dict()
+
+    print("TEST: PROCESSING 4 DEMOS...")
+    print("\n\nTEST: DEMO 1...")
+    f1 = "data/adventures_of_huckleberry_finn.txt"
+    f2 = "data/adventures_of_tom_sawyer.txt"
+    d.update(clean(demo(f1, f2, LevenSquash(),
+                        "Two similar stories written by the same author"), f1, f2))
+    t += d["DEMO RUN TIME"]
+    save_data(d, "huck_and_sawyer")
+
+    print("\n\nTEST: DEMO 2...")
+    f1 = "data/dantes_inferno_english_sibbald.txt"
+    f2 = "data/dantes_inferno_english_longfellow.txt"
+    d.update(clean(demo(f1, f2, LevenSquash(),
+                        "Two different translations of the same book"), f1, f2))
+    t += d["DEMO RUN TIME"]
+    save_data(d, "sibbald_and_longfellow")
+
+    print("\n\nTEST: DEMO 3...")
+    f1 = "data/adventures_of_huckleberry_finn.txt"
+    f2 = "data/dantes_inferno_english_sibbald.txt"
+    d.update(clean(demo(f1, f2, LevenSquash(),
+                        "Two totally different english books"), f1, f2))
+    t += d["DEMO RUN TIME"]
+    save_data(d, "huck_and_sibbald")
+
+    print("\n\nTEST: DEMO 4...")
+    f1 = "data/dantes_inferno_italian.txt"
+    f2 = "data/dantes_inferno_english_longfellow.txt"
+    d.update(clean(demo(f1, f2, LevenSquash(),
+                        "Same book in two different languages"), f1, f2))
+    t += d["DEMO RUN TIME"]
+    save_data(d, "italian_and_english")
+
+    print("\n\nTEST: FINISHED.")
+    print("\TEST: TIME TO COMPLETE: " + str(t))
+
+    return d
+    # return pp.pformat(demo(ls, f1, f2))
+    # print(pp.pformat(demo(ls, f1, f2)))
 
 
-def assess_LD_calculation(string, ls):
-    """
-    Return a set of basic statistics on LD algorithm implementation of ls.
-    """
+def clean(d, f1, f2):
+    d["INPUT"][f1]["CONTENT"]["TEXT"] = ""
+    d["INPUT"][f2]["CONTENT"]["TEXT"] = ""
+
+    return d
+
+
+def test_load(d="data"):
+    return load_data(d)
+
+
+def pdemo(demo_results):
+    pp = pprint.PrettyPrinter(indent=4)
+
+    pp.pprint(demo_results)
+
+    # return pp.pformat(demo(ls, f1, f2))
+    # print(pp.pformat(demo(ls, f1, f2)))
+
+
+def demo(f1, f2, ls=LevenSquash(), description=""):
+    start = time.clock()
+    print("DEMO: DEMO START...")
+
+    d = dict()
+
+    print("DEMO: READING FILES '" + f1 + "' AND '" + f2 + "'...")
+    d["INPUT"] = describe_files(f1, f2, description)
+
+    f1_text = d["INPUT"][f1]["CONTENT"]["TEXT"]
+    f2_text = d["INPUT"][f2]["CONTENT"]["TEXT"]
+
+    print("DEMO: CALCULATING ABSOLUTE LEVENSHTEIN DISTANCE...")
+    sd = ScoreDistance(f1_text, f2_text, ls)
+
+    d["DISTANCE"] = describe_measure(LevenSquash.calculate, sd)
+
+    n1 = 2
+    n2 = 10
+    c1 = 100
+    c2 = 250
+    print("DEMO: ESTIMATING OVER RANGES OF C=" + str(c1) + ",C=" + str(c2) +
+          " AND N=" + str(n1) + ",N=" + str(n2) + " ...")
+    print("DEMO: N BETWEEN " + str(n1) + " AND " + str(n2))
+    estimates = list()
+    compressions = list()
+    for n in xrange(n1, n2):
+        print("DEMO: N=" + str(n))
+        sd.setN(n)
+        for c in xrange(c1, c2, 10):
+            sd.setC(c)
+            estimates.append(estimate(sd))
+            compressions.append(
+                compress(f1_text, f2_text, f1, f2, sd.getC(), sd.getN()))
+
+    # computations = compute(f1_text, f2_text, sd, f1, f2)
+
+    d["ESTIMATION"] = estimates
+    d["COMPRESSION"] = compressions
+
+    end = time.clock()
+    t = end - start
+
+    print("DEMO: FINISH.")
+    print("DEMO: TIME TO PROCESS: " + str(t))
+
+    d["DEMO RUN TIME"] = t
+
+    return d
+
+
+def estimate(sd):
+    d = dict()
+
+    d = assess_estimation(sd)
+
+    return d
+
+
+def compress(str1, str2, str1_name, str2_name, C, N):
+    d = dict()
+
+    d[str1_name] = describe_compression(str1,
+                                        C,
+                                        N)
+    d[str2_name] = describe_compression(str2,
+                                        C,
+                                        N)
+
+    return d
+
+
+def save_data(d, name):
+    with open('records/' + name + '.pkl', 'wb') as f:
+        pickle.dump(d, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_data(name):
+    with open('records/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
