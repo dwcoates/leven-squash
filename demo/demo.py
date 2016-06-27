@@ -523,11 +523,189 @@ def compress(str1, str2, str1_name, str2_name, C, N):
     return d
 
 
-def save_data(d, name):
-    with open('records/' + name + '.pkl', 'wb') as f:
-        pickle.dump(d, f, pickle.HIGHEST_PROTOCOL)
+class DemoBase:
+
+    def get():
+        """
+        Return a dict representation.
+        """
+    def __repr__():
+        """
+        Return formatted string-represented dict.
+        """
+
+        raise NotImplementedError()
+
+    def __str__():
+        """
+        Return formatted string-represented dict. May truncate long strings.
+        """
+        raise NotImplementedError()
+
+    def save_data(d, name):
+        # TODO: Implement
+        with open('records/' + name + '.pkl', 'wb') as f:
+            pickle.dump(d, f, pickle.HIGHEST_PROTOCOL)
+
+    def load_data(name):
+        # TODO: Implement
+        with open('records/' + name + '.pkl', 'rb') as f:
+            return pickle.load(f)
 
 
-def load_data(name):
-    with open('records/' + name + '.pkl', 'rb') as f:
-        return pickle.load(f)
+class Description(DemoBase):
+    pass
+
+
+class Assessment(DemoBase):
+    _DESCRIPTION_TYPE = None
+
+    def __init__(self, DESCRIPTION_TYPE):
+        self._descriptions = dict()
+        self._DESCRIPTION_TYPE = DESCRIPTION_TYPE
+
+    def add(self, name, description):
+        provided_desc_typename = description.__class__.__name__
+        class_desc_typename = self.__class__._DESCRIPTION_TYPE
+        if provided_desc_typename != class_desc_typename:
+            raise TypeError("Demo Assessment class '" +
+                            self.__class__.__name__ +
+                            "' only adds Descriptions of type '" +
+                            class_desc_typename +
+                            ". Recieved Description of type '" +
+                            provided_desc_typename)
+        self._descriptions[name] = description
+
+    def _get_values(self, get_attribute_method):
+        d = dict()
+
+        for key in self._descriptions:
+            d[key] = self._descriptions[key].get_attribute_method()
+
+        return d
+
+    def __repr__(self):
+        """
+        Returns a formatted dict of demo results, generally with computation
+        results at the lowests levels of the dictionary. For example, a
+        CompressorAssessment may have 100 CompressorDescriptions, but will not
+        simply return a list of CompressorDescription.__repr__(). Instead, for
+        example, TIME/ will contain 100 entries, instead of 100 TIME entries
+        (one for each CompressorDescription), each with one subentry.
+        """
+        raise NotImplementedError()
+
+
+class StringDescription(Description):
+
+    def __init__(self, string, note):
+        self._string = string
+        self._note = note
+        self._entropy = ShannonBasic().calculate(string)
+
+    def get(self):
+        """
+        Return a dict representation of data.
+        """
+        d = dict()
+
+        d["TEXT"] = self._string
+        d["LENGTH"] = self.get_length()
+        d["ENTROPY"] = self._entropy
+
+        return d
+
+    def get_length(self):
+        return len(self._string)
+
+    def get_text(self):
+        return self._string
+
+    def get_entropy(self):
+        return self._entropy
+
+
+class CompressorDescription(Description):
+
+    def __init__(self, compressor, string):
+        signature = compressor.compress(string)
+        diff = ScoreDistance.difference
+        self._name = compressor.__class__.__name__
+        self._sig_desc = StringDescription(signature.value())
+        self._time = signature.time()
+        self._accuracy = diff(self._sig_desc.get_length(),
+                              len(string) / compressor.getC())
+
+    def add(self, C, N):
+        if N not in self._compressions:
+            self._compressions[N] = dict()
+
+        self._compressions[N][C] = CompressorDescription(
+            self._compressor, C, N)
+
+
+class CompressorAssessment(DemoBase):
+
+    def __init__(self, compressor):
+        self._compressions = dict()
+        self._compressor = compressor
+
+    def add(self, C, N):
+        if N not in self._compressions:
+            self._compressions[N] = dict()
+
+        self._compressions[N][C] = CompressorDescription(
+            self._compressor, C, N)
+
+    def get(self):
+        """
+        Return a dict representation.
+        """
+        d = dict()
+
+        # create array of signatures
+        # create array of lengths
+        # create array
+
+        pass
+
+    def _foo(d, quality):
+        """
+        Accepts a dict of descriptions, and returns a list of key:values,
+        the keys for which are the keys of the provided dict, and the values
+        are the values are the qualities in the provided key's corresponding
+        descprition
+        """
+
+
+class FileDescription(DemoBase):
+
+    def __init__(self, fname):
+        file_info = self._parse_file(fname)
+
+        self._content = StringDescription(file_info[0])
+        self._description = file_info[1]
+
+    def get(self):
+        """
+        Return a dict representation.
+        """
+        d = dict()
+
+        d["CONTENTS"] = self._text.get()
+        d["DESCRIPTION"] = self._description
+        pass
+
+    @staticmethod
+    def _parse_file(fname):
+        """
+        Read file, and parse for description and text. Returns tuple with
+        elements (text, description)
+        """
+        with open(fname) as f:
+            text = f.read().replace('\n', '')
+
+        # Currently just returns file text
+        description = ""
+
+        return (text, description)
