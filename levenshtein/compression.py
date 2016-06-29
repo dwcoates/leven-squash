@@ -3,6 +3,7 @@ import binascii
 import md5
 
 from levenshtein.utils import alphabet
+from levenshtein.utils.computation import CalculationCache
 from compressor import basic
 
 
@@ -105,6 +106,38 @@ class ACompressor:
             indx = _hash % alpha_len
             char = self.get_alphabet()[indx]
             signature.append(char)
+
+
+# Is it bad Python style to impersonate polymorphism with a wrapper class like
+# this? This strategy takes advantage of duck-typing in methods accepting
+# ACompressors by wrapping ACompressor's interface without inheritance.
+# I could just have all cached compressors inherit from their corresponding
+# uncached versions, as this would allow for the caching of implementation
+# ("private") methods, but it isn't necessary and is kind of laborous.
+class CachedCompressor:
+
+    def __init__(self, compressor):
+        self._compressor = compressor
+        self._cache = CalculationCache()
+
+    def setC(self, c):
+        self._compressor.setC(c)
+
+        self._cache.reset_cache()
+
+    def setN(self, n):
+        self._compressor.setN(n)
+
+        self._cache.reset_cache()
+
+    def getC(self):
+        return self._compressor.getC()
+
+    def getN(self):
+        return self._compressor.getN()
+
+    def compress(self, string):
+        return self._cache.produce(self._compressor.compress, string)
 
 
 class StringCompressorBasic (ACompressor):
