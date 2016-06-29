@@ -1,6 +1,7 @@
 import logging
 import binascii
 import md5
+import copy
 
 from levenshtein.utils import alphabet
 from levenshtein.utils.computation import CalculationCache
@@ -119,6 +120,9 @@ class CachedCompressor:
     def __init__(self, compressor):
         self._compressor = compressor
         self._cache = CalculationCache()
+
+    def get_compressor(self):
+        return copy.deepcopy(self._compressor)
 
     def setC(self, c):
         self._compressor.setC(c)
