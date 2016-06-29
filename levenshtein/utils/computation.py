@@ -1,7 +1,12 @@
 from timeit import default_timer as timer
+import copy
 
 
 class Computation:
+    """
+    Class for encapsulating a calculation's result and the time to calculate.
+    Prefer building Computations with ComputationManager.CREATE_COMPUTATION.
+    """
 
     def __init__(self, value, time):
         self._value = value
@@ -59,50 +64,87 @@ class ComputationManager:
         ComputationManager._TIME_REGISTER += computation.time()
 
 
-class ComputationCache:
+class CalculationCache:
+    """
+    Caches computations. Times them and stores their results and times in a
+    Calculation. Returns computation values. To return complete calculations,
+    use ComputationManager.CREATE_COMPUTATION(cache_instance.produce) or
+    something similiar.
+    """
 
     def __init__(self):
         self._cache = dict()
 
-    def get(self, key):
+    @classmethod
+    def _yield(cls, computation):
         """
-        Get Calculation corresponding to key 'key' if it exists. Prefer
-        produce(function, args).
+        Return a safe and appropriate representation of computation.value().
+        """
+        return computation.value()
+
+    def check(self, key):
+        """
+        Check cached value corresponding to 'key'. This will not notify the
+        CalculationManager, and so is not suitable if you want to source the
+        cache publically.
+        """
+        if self.exists(key):
+            return copy.deepcopy(self._cache[key])
+        return None
+
+    def exists(self, key):
+        """
+        Return True iff there exists a computation corresponding to 'key'.
         """
         if key in self._cache:
-            c = self._cache[key]
-            ComputationManager.REGISTER_COMPUTATION(c)
-            return c
+            return True
         else:
-            return None
+            return False
 
-    def add(self, key, calculation):
+    def get(self, key):
+        """
+        Get value corresponding to 'key' if it exists. Prefer
+        produce(function, args). Will register the calculation to
+        CalculationManager so that it's being sourced is known to
+        methods calling this one.
+        """
+        computation = self.check(key)
+        if computation is not None:
+            ComputationManager.REGISTER_COMPUTATION(computation)
+            return self._yield(computation)
+        return None
+
+    def add(self, key, function, *args):
         """
         Add Calculation 'calculation' to cache under key 'key'. Prefer
         produce(function, args).
         """
+        computation = ComputationManager.CREATE_COMPUTATION(
+            function, *args)
+        self._add(key, computation)
+
+    def _add(self, key, computation):
         if key in self._cache:
-            raise ValueError("Cache already has value and time for key '" +
+            raise ValueError("Cache already has computation for key '" +
                              key + "': (" + self.get_value[key] + ", " +
                              self.get_time[key] + ". Remove with clear(key) " +
-                             "before adding.")
-        else:
-            self._cache[key] = calculation
+                             "before adding if this is intended.")
+
+        self._cache[key] = computation
 
     def produce(self, function, *args):
         """
         Wraps get(key) and add(key, calculation) to guarantee that a
         calculation corresponding to 'function' and 'args' will be returned,
-        whether it already exists in the cache or not.
+        whether it already exists in the cache or not. Note, this uses
+        CaclulationCache.create_key to create the key. This method is only
+        well-defined for immutable 'args'.
         """
         key = self.create_key(function, *args)
-        computation = self.get(key)
-        if computation is None:
-            computation = ComputationManager.CREATE_COMPUTATION(
-                function, *args)
-            self.add(key, computation)
+        if self.exists(key) is False:
+            self.add(key, function, *args)
 
-        return computation
+        return self.get(key)
 
     def clear(self, key):
         """
@@ -110,7 +152,7 @@ class ComputationCache:
         """
         if key not in self._cache:
             raise ValueError("Removal of key '" + key + "' failed. Cache " +
-                             "does not contain key.")
+                             "does not contain it.")
         else:
             del self._cache[key]
 
@@ -120,7 +162,6 @@ class ComputationCache:
         reset.
         """
         delete = list()
-
         for key in self._cache:
             if key not in ignore:
                 delete.append(key)
@@ -128,10 +169,12 @@ class ComputationCache:
         for i in delete:
             self.clear(i)
 
-    def create_key(self, function, *args):
+    @classmethod
+    def create_key(cls, function, *args):
         """
-        Return a consistent key correspoding to function 'function' accepting
-        arguments 'arguments'. Recommended (but not necessary) input to
-        add(key, calculation).
+        Return a key corresponding to function 'function' accepting 'args'.
+        Recommended (but not necessary) input to add(key, calculation). This
+        method roduces keys with id(arg), so is only useful for immutable
+        'args'. Otherwise, manually create keys.
         """
         return ''.join(map(lambda x: str(id(x)), args) + [function.__name__])
