@@ -69,7 +69,9 @@ class CalculationCache:
     Caches computations. Times them and stores their results and times in a
     Calculation. Returns computation values. To return complete calculations,
     use ComputationManager.CREATE_COMPUTATION(cache_instance.produce) or
-    something similiar.
+    something similiar. Note, this cache's default key creator uses the
+    IDs of the cached function's arguments. Therefore, do not use this default
+    method (create_key) to cache functions accepting mutable arguments.
     """
 
     def __init__(self):
