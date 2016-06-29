@@ -103,7 +103,7 @@ class CalculationCache:
         else:
             return False
 
-    def get(self, key):
+    def source(self, key):
         """
         Get value corresponding to 'key' if it exists. Prefer
         produce(function, args). Will register the calculation to
@@ -126,11 +126,11 @@ class CalculationCache:
         self._add(key, computation)
 
     def _add(self, key, computation):
-        if key in self._cache:
+        if self.exists(key):
             raise ValueError("Cache already has computation for key '" +
-                             key + "': (" + self.get_value[key] + ", " +
-                             self.get_time[key] + ". Remove with clear(key) " +
-                             "before adding if this is intended.")
+                             key + "': " + str(self.check(key)) +
+                             ". Remove with clear(key) before adding if " +
+                             "this is intended.")
 
         self._cache[key] = computation
 
@@ -143,10 +143,13 @@ class CalculationCache:
         well-defined for immutable 'args'.
         """
         key = self.create_key(function, *args)
-        if self.exists(key) is False:
-            self.add(key, function, *args)
 
-        return self.get(key)
+        v = self.source(key)
+        if v is None:
+            self.add(key, function, *args)
+            v = self._yield(self.check(key))
+
+        return v
 
     def clear(self, key):
         """
