@@ -1,64 +1,26 @@
-import inspect
-import time
-
 from levenshtein.leven_squash import LevenSquash
+from levenshtein.utils.computation import Computation
 
 
 class ScoreDistance():
     """
     Class for assessing qualities of leven-squash distance calculations.
     """
-    _distance_functions = [LevenSquash.calculate.__name__,
-                           LevenSquash.estimate.__name__,
-                           LevenSquash.estimate_corrected.__name__]
 
     def __init__(self, str1, str2, ls=LevenSquash()):
         # hmm
         # self.log = logging.getLogger()
-        self._cache = CalculationCache()
-
         self._str1 = str1
         self._str2 = str2
 
         self._ls = ls
-
-    def reset_cache(self, *ignore):
-        self._cache.reset_cache(ignore)
-
-    def _provide_cache_stat(self, get_stat, function):
-        if function not in ScoreDistance._distance_functions:
-            raise ValueError("Function '" + function + "' is not a " +
-                             "known distance function of LevenSquash.")
-
-        s = get_stat(function)
-
-        if s is None:
-            start = time.clock()
-            v = getattr(self._ls, function)(self._str1, self._str2)
-            end = time.clock()
-            t = end - start
-            self._cache.add(function, v, t)
-
-        return get_stat(function)
-
-    def time(self, function):
-        return self._provide_cache_stat(self._cache.get_time, function)
-
-    def value(self, function):
-        return self._provide_cache_stat(self._cache.get_value, function)
-
-    def set_strings(self, str1, str2):
-        self._str1 = str1
-        self._str2 = str2
-
-        self.reset_cache()
+        self._ls.cache_compressor()
+        self._ls.cache_ld_alg()
 
     def get_strings(self):
         return (self._str1, self._str2)
 
     def set_leven_squash(self, ls):
-        self.reset_cache(self.calculate.__name__)
-
         self._ls = ls
 
     def get_leven_squash(self):
@@ -77,15 +39,10 @@ class ScoreDistance():
     def setC(self, c):
         self._ls.setC(c)
 
-        self.reset_cache("calculate")
-
     def setN(self, n):
         self._ls.setN(n)
 
-        self.reset_cache("calculate")
-
     def compress(self, string):
-        # doesn't cache at the moment, not really very important that it does.
         return self._ls.compress(string)
 
     @staticmethod
@@ -190,49 +147,3 @@ class ScoreDistance():
         computedLenRatioPlain = ld / float(longer)
         estimatedUnadjusted = computedLenRatioPlain
         return self.fudgeFactor(estimatedUnadjusted)
-
-
-class CalculationCache:
-
-    def __init__(self):
-        self._cache = dict()
-
-    def get_value(self, key):
-        if key in self._cache:
-            return self._cache[key][0]
-        else:
-            return None
-
-    def get_time(self, key):
-        if key in self._cache:
-            return self._cache[key][1]
-        else:
-            return None
-
-    # ScoreDistance should never add a key that already exists or remove a key
-    # that doesnt, so these methods raise errors.
-    def add(self, key, value, time):
-        if key in self._cache:
-            raise ValueError("Cache already has value and time for key '" +
-                             key + "': (" + self.get_value[key] + ", " +
-                             self.get_time[key] + ". Remove with clear(key) " +
-                             "before adding.")
-        else:
-            self._cache[key] = (value, time)
-
-    def clear(self, key):
-        if key not in self._cache:
-            raise ValueError("Removal of key '" + key + "' failed. Cache " +
-                             "does not contain key.")
-        else:
-            del self._cache[key]
-
-    def reset_cache(self, ignore):
-        delete = list()
-
-        for key in self._cache:
-            if key not in ignore:
-                delete.append(key)
-
-        for i in delete:
-            self.clear(i)
