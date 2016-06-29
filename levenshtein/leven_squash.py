@@ -1,6 +1,8 @@
 import logging
 
 from levenshtein import distance, compression
+from levenshtein.compression import CachedCompressor
+from levenshtein.distance import CachedLDAlgorithm
 from levenshtein.utils.filer import normalize_from_file
 from copy import deepcopy
 
@@ -29,7 +31,7 @@ class LevenSquash():
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
         if compressor is None:
-            self._sc = compression.StringCompressorBasic()
+    nn        self._sc = compression.StringCompressorBasic()
         else:
             self._sc = compressor
         logger.info("Configured leven-squash with %s compression scheme.",
@@ -69,41 +71,6 @@ class LevenSquash():
     def set_ld_alg(self, dist_alg):
         self._dist_alg = dist_alg
 
-    def compute_sig_dist(self, str1, str2):
-        """
-        Accepts two strings, returning their leven-squash signature distance.
-        """
-        logger.info("Determining distance of two string signatures...")
-
-        str1 = normalize_from_file(str1)
-        str2 = normalize_from_file(str2)
-
-        sig1 = self.compress(str1)
-        sig2 = self.compress(str2)
-        logger.info('Computing signature distance...')
-
-        squash_dist = self.calculate(sig1, sig2)
-
-        logger.info("Signature distance computed using %s LD algorithm",
-                    type(self._dist_alg).__name__)
-
-        return squash_dist
-
-    def _estimate(self, str1, str2):
-        logger.info("Squashing distance between two strings...")
-
-        sig_dist = self.compute_sig_dist(str1, str2)
-
-        approx = sig_dist * self._sc.getC()
-
-        logger.info("Signature distance " +
-                    str(sig_dist) +
-                    " Scaled by compression factor " +
-                    str(self._sc.getC()) + ": " +
-                    str(approx))
-
-        return approx
-
     def estimate(self, str1, str2):
         """
         Accepts two strings, and returns the approximation of their distance.
@@ -131,12 +98,6 @@ class LevenSquash():
 
         return est_corrected
 
-    def compress(self, string):
-        """
-        Use set compression scheme to compress string.
-        """
-        return self._sc.compress(string)
-
     def calculate(self, str1, str2):
         """
         Return LD distance calcuation between str1 and str2. This is a
@@ -157,103 +118,25 @@ class LevenSquash():
 
         return dist
 
+    def _estimate(self, str1, str2):
+        logger.info("Squashing distance between two strings...")
 
-class LevenSquasher:
+        sig1 = self.compress(str1)
+        sig2 = self.compress(str2)
 
-    def __init__(self, str1, str2, ls=LevenSquash()):
-        # hmm
-        #self.log = logging.getLogger()
+        logger.info('Computing signature distance...')
 
-        # strings should be stored as hashtable keys
-        # values are signatures and time to compute them
+        squash_dist = self.calculate(sig1, sig2)
 
-        self._str1 = str1
-        self._str2 = str2
+        logger.info("Signature distance computed using %s LD algorithm",
+                    type(self._dist_alg).__name__)
 
-        self._ls = ls
+        approx = squash_dist * self._sc.getC()
 
-        self._cache = dict()
+        logger.info("Signature distance " +
+                    str(squash_dist) +
+                    " Scaled by compression factor " +
+                    str(self._sc.getC()) + ": " +
+                    str(approx))
 
-    def reset_cache(self):
-        """
-        Reset the ScoreDistance instance's cache. Useful externally if you
-        want to recalculate computation time for some cached method.
-        """
-        self._cache = dict()
-
-    def _get_value(self, fun, *args):
-        """
-        Return the cached value of the calling function + args if they've
-        already been computed. Otherwise, compute the function and return the
-        result.
-        """
-        for arg in args:
-            if arg != self._str1 and arg != self._str2:
-                self.reset_cache()
-                break
-
-        key = fun.__name__ + ''.join(args)
-
-        if key in self._cache:
-            return self._cache[key]
-
-        val = fun(*args)
-        self._cache[key] = val
-
-        return val
-
-    def get_leven_squash(self):
-        """
-        Returns a deep copy of the LevenSquash module being scored.
-        """
-        return deepcopy(self._ls)
-
-    def set_leven_squash(self, ls):
-        self.reset_cache()
-        self._ls = ls
-
-    def set_strings(self, str1=None, str2=None):
-        """
-        Sets the strings to str1 and str2. If strx is None, then it is unaffected.
-        """
-        pass
-
-    def get_strings():
-        """
-        Returns a tuple consisting of the stings being used by the squasher
-        """
-        pass
-
-    def set_str1(self, str1):
-        self.reset_cache()
-
-        self._cache[self._str1] = self._ls.compress(self._str1)
-        self._str1 = str1
-
-    def set_str2(self, str2):
-        self.reset_cache()
-
-        self._cache[self._str2] = self._ls.compress(self._str2)
-        self._str2 = str2
-
-    def get_str1(self):
-        return self._str1
-
-    def get_str2(self):
-        return self._str2
-
-    def compress(self, string):
-        # this is possibly a resource leak
-        # should return sig1 or sig2 or compute the signature, and if
-        return self._get_value(self._ls.compress, string)
-
-    def calculate(self):
-        return self._get_value(self._ls.calculate, self._str1, self._str2)
-
-    def estimate(self):
-        return self._get_value(self._ls.estimate, self._str1, self._str2)
-
-    def estimate_corrected(self):
-        return self._get_value(self._ls.estimate_corrected,
-                               self._str1,
-                               self._str2)
+        return approx
