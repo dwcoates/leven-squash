@@ -1,4 +1,5 @@
 from timeit import default_timer as timer
+from collections import OrderedDict
 import copy
 
 
@@ -74,8 +75,8 @@ class CalculationCache:
     method (create_key) to cache functions accepting mutable arguments.
     """
 
-    def __init__(self):
-        self._cache = dict()
+    def __init__(self, limit=100):
+        self._cache = LimitedSizeDict(size_limit=limit)
 
     @classmethod
     def _yield(cls, computation):
@@ -183,3 +184,20 @@ class CalculationCache:
         'args'. Otherwise, manually create keys.
         """
         return ''.join(map(lambda x: str(id(x)), args) + [function.__name__])
+
+
+class LimitedSizeDict(OrderedDict):
+
+    def __init__(self, *args, **kwds):
+        self.size_limit = kwds.pop("size_limit", None)
+        OrderedDict.__init__(self, *args, **kwds)
+        self._check_size_limit()
+
+    def __setitem__(self, key, value):
+        OrderedDict.__setitem__(self, key, value)
+        self._check_size_limit()
+
+    def _check_size_limit(self):
+        if self.size_limit is not None:
+            while len(self) > self.size_limit:
+                self.popitem(last=False)
