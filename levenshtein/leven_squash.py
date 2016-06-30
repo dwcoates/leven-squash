@@ -1,8 +1,10 @@
 import logging
 
-from levenshtein import distance, compression
+from levenshtein.distance import *
+from levenshtein.compression import *
 from levenshtein.compression import CachedCompressor
 from levenshtein.distance import CachedLDAlgorithm
+from levenshtein.utils.computation import ComputationManager
 from levenshtein.utils.filer import normalize_from_file
 from copy import deepcopy
 
@@ -13,7 +15,7 @@ if __name__ == '__main__':
 logger = logging.getLogger(__name__)
 
 
-class LevenSquash():
+class LevenSquash(object):
     # Amount by which the LD of a pair of equal length random text strings is
     # smaller than their length. This is used to fudge the product of
     # signature LD and compression factor to adjust the expectation.
@@ -31,16 +33,16 @@ class LevenSquash():
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
         if compressor is None:
-    nn        self._sc = compression.StringCompressorBasic()
+            self._compressor = StringCompressorBasic()
         else:
-            self._sc = compressor
+            self._compressor = compressor
         logger.info("Configured leven-squash with %s compression scheme.",
-                    self._sc.__class__.__name__)
+                    self._compressor.__class__.__name__)
 
         # Default distance calculation alasgorithm is the standard algorithm
         # in n*m time and max(n,m) space complexity
         if dist_alg is None:
-            self._dist_alg = distance.AbsoluteLD()
+            self._dist_alg = AbsoluteLD()
         else:
             self._dist_alg = dist_alg
 
@@ -60,13 +62,13 @@ class LevenSquash():
         return self.get_compressor().getC()
 
     def get_compressor(self):
-        return self._sc
+        return self._compressor
 
     def get_ld_alg(self):
         return self._dist_alg
 
     def set_compressor(self, compressor):
-        self._sc = compressor
+        self._compressor = compressor
 
     def set_ld_alg(self, dist_alg):
         self._dist_alg = dist_alg
@@ -121,8 +123,8 @@ class LevenSquash():
     def _estimate(self, str1, str2):
         logger.info("Squashing distance between two strings...")
 
-        sig1 = self.compress(str1)
-        sig2 = self.compress(str2)
+        sig1 = self._compressor.compress(str1)
+        sig2 = self._compressor.compress(str2)
 
         logger.info('Computing signature distance...')
 
@@ -131,12 +133,58 @@ class LevenSquash():
         logger.info("Signature distance computed using %s LD algorithm",
                     type(self._dist_alg).__name__)
 
-        approx = squash_dist * self._sc.getC()
+        approx = squash_dist * self._compressor.getC()
 
         logger.info("Signature distance " +
                     str(squash_dist) +
                     " Scaled by compression factor " +
-                    str(self._sc.getC()) + ": " +
+                    str(self._compressor.getC()) + ": " +
                     str(approx))
 
         return approx
+
+
+class SmartLevenSquash (LevenSquash):
+
+    def __init__(self, compressor=StringCompressorBasic(), dist_alg=AbsoluteLD()):
+        self._ls = LevenSquash(CachedCompressor(
+            compressor), CachedLDAlgorithm(dist_alg))
+
+    def setN(self, n):
+        self._ls.get_compressor().setN(n)
+
+    def getN(self):
+        return self._ls.get_compressor().getN()
+
+    def setC(self, c):
+        self._ls.get_compressor().setC(c)
+
+    def getC(self):
+        return self._ls.get_compressor().getC()
+
+    def get_compressor(self):
+        return self._ls.get_compressor()
+
+    def get_ld_alg(self):
+        return self._ls.get_ls_alg()
+
+    def set_compressor(self, compressor):
+        self._ls.set_compressor(compressor)
+
+    def set_ld_alg(self, dist_alg):
+        self._ls.set_ld_alg(dist_alg)
+
+    def estimate(self, str1, str2):
+        return ComputationManager.CREATE_COMPUTATION(self._ls.estimate,
+                                                     str1,
+                                                     str2)
+
+    def estimate_corrected(self, str1, str2):
+        return ComputationManager.CREATE_COMPUTATION(self._ls.estimate_corrected,
+                                                     str1,
+                                                     str2)
+
+    def calculate(self, str1, str2):
+        return ComputationManager.CREATE_COMPUTATION(self._ls.calculate,
+                                                     str1,
+                                                     str2)
