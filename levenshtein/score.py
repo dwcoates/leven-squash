@@ -1,4 +1,4 @@
-from levenshtein.leven_squash import LevenSquash
+from levenshtein.leven_squash import *
 from levenshtein.utils.computation import Computation
 
 
@@ -6,6 +6,9 @@ class ScoreDistance():
     """
     Class for assessing qualities of leven-squash distance calculations.
     """
+    _DISTANCE_FUNCTIONS = [LevenSquash.calculate.__name__,
+                           LevenSquash.estimate.__name__,
+                           LevenSquash.estimate_corrected.__name__]
 
     def __init__(self, str1, str2, ls=LevenSquash()):
         # hmm
@@ -13,39 +16,48 @@ class ScoreDistance():
         self._str1 = str1
         self._str2 = str2
 
-        self._ls = ls
-        self._ls.cache_compressor()
-        self._ls.cache_ld_alg()
+        self._sls = SmartLevenSquash(ls.get_compressor, ls.get_ld_alg)
 
     def get_strings(self):
         return (self._str1, self._str2)
 
     def set_leven_squash(self, ls):
-        self._ls = ls
+        self._sls = SmartLevenSquash(ls.get_compressor(), ls.get_ld_alg())
 
     def get_leven_squash(self):
         """
         Returns a deep copy of the LevenSquash module being scored.
         """
         # CURRENTLY RETURNS REFERENCE. WARNING.
-        return self._ls
+        return self._sls
 
     def getC(self):
-        return self._ls.getC()
+        return self._sls.getC()
 
     def getN(self):
-        return self._ls.getN()
+        return self._sls.getN()
 
     def setC(self, c):
-        self._ls.setC(c)
+        self._sls.setC(c)
 
     def setN(self, n):
-        self._ls.setN(n)
+        self._sls.setN(n)
 
-    def compress(self, string):
-        return self._ls.compress(string)
+    def get(self, dist_alg):
+        if dist_alg not in self._DISTANCE_FUNCTIONS:
+            raise ValueError("'" + dist_alg.__name__ +
+                             "' is not an accepted LevenSquash distance " +
+                             "measure.")
+        else:
+            return getattr(self._sls, dist_alg)(self._str1, self._str2)
 
-    @staticmethod
+    def diff(self, dist_alg1, dist_alg2):
+        c1 = self.get(dist_alg1)
+        c2 = self.get(dist_alg2)
+
+        return Computation(self.difference(c1.value(), c2.value()),
+                           self.difference(c1.time(), c2.time()))
+
     def difference(a, b):
         """
         Accepts two numbers, 'a' and 'b',  and returns a score of how
@@ -59,13 +71,13 @@ class ScoreDistance():
     def error(calculation, approximation):
         return abs(ScoreDistance.difference(approximation, calculation))
 
-    def _similarity(self, alg):
+    def _similarity(self, dist_alg):
         """
         Uses dist_alg to compute the distance between str1 and str2.
         Returns the similarity of the two strings, which is 1 minus
         the difference ratio.
         """
-        diff = self.value(alg)
+        diff = self.get(dist_alg).value()
 
         longer = max(len(self._str1), len(self._str2))
 
@@ -143,7 +155,7 @@ class ScoreDistance():
     # (they differ).
     def getLDEst(self, sig1, sig2, longerUnCompressed, shorterUncompressed):
         longer = max(sig1.length(), sig2.length())
-        ld = self._ls.calculate(sig1, sig2)
+        ld = self._sls.calculate(sig1, sig2)
         computedLenRatioPlain = ld / float(longer)
         estimatedUnadjusted = computedLenRatioPlain
         return self.fudgeFactor(estimatedUnadjusted)
