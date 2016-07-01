@@ -2,8 +2,6 @@ import logging
 
 from levenshtein.distance import *
 from levenshtein.compression import *
-from levenshtein.compression import CachedCompressor
-from levenshtein.distance import CachedLDAlgorithm
 from levenshtein.utils.computation import ComputationManager
 from levenshtein.utils.filer import normalize_from_file
 from copy import deepcopy
@@ -33,7 +31,7 @@ class LevenSquash(object):
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
         if compressor is None:
-            self._compressor = StringCompressorBasic()
+            self._compressor = Compressor()
         else:
             self._compressor = compressor
         logger.info("Configured leven-squash with %s compression scheme.",
@@ -42,7 +40,7 @@ class LevenSquash(object):
         # Default distance calculation alasgorithm is the standard algorithm
         # in n*m time and max(n,m) space complexity
         if dist_alg is None:
-            self._dist_alg = AbsoluteLD()
+            self._dist_alg = LevenDistance()
         else:
             self._dist_alg = dist_alg
 
@@ -107,9 +105,6 @@ class LevenSquash(object):
         algorithm, and not the leven-squash estimation process.
         Accepts either strings or filenames to be read from.
         """
-        str1 = normalize_from_file(str1)
-        str2 = normalize_from_file(str2)
-
         try:
             dist = self._dist_alg.distance(str1, str2)
         except AttributeError:
@@ -144,11 +139,16 @@ class LevenSquash(object):
         return approx
 
 
-class SmartLevenSquash (LevenSquash):
+class SmartLevenSquash:
 
-    def __init__(self, compressor=StringCompressorBasic(), dist_alg=AbsoluteLD()):
-        self._ls = LevenSquash(CachedCompressor(
-            compressor), CachedLDAlgorithm(dist_alg))
+    def __init__(self, compressor=Compressor(), dist_alg=LevenDistance()):
+        # this should do a deepcopy
+        comp = copy(compressor)
+        comp.set_cache(True)
+        alg = copy(dist_alg)
+        alg.set_cache(True)
+
+        self._ls = LevenSquash(comp, alg)
 
     def setN(self, n):
         self._ls.get_compressor().setN(n)
