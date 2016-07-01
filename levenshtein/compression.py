@@ -1,34 +1,119 @@
 import logging
 import binascii
 import md5
+import copy
 
 from levenshtein.utils import alphabet
+from levenshtein.utils.computation import CalculationCache
+from levenshtein.utils.process import *
 from compressor import basic
 
 
-class ACompressor:
-    _chars = alphabet.ALPHABET_BASIC
+class Compression (Process):
 
-    def __init__(self, C=150, N=8, alphabet=None):
+    def __call__(self, string, alphabet, C, N):
+        raise NotImplementedError("Compression is a template for " +
+                                  "compression algorithms. Not implemented.")
+
+    def _core(self, string, alphabet, C, N):
+        sig = list()
+        str_pos = 0
+        str_len = len(string)
+
+        while str_pos + N < str_len:
+            h = self._hash_neighborhood(string, str_pos, N)
+            self._add_char(sig, alphabet, h, C)
+            str_pos = str_pos + 1
+
+        return ''.join(sig)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        raise NotImplementedError("The '" + self.__class__.__name__ +
+                                  "' compressor module has not implemented " +
+                                  "_hash_neighborhood.")
+
+    def _add_char(self, signature, alphabet, h, C):
+        """
+        Accept a list of characters 'signature' and append a random character
+        from alphabet with 1/C liklihood. This is a function of '_hash'. That
+        is, identical values of '_hash' must always add the same character.
+        """
+        alpha_len = len(alphabet)
+
+        if h % C == 0:
+            indx = h % alpha_len
+            char = alphabet[indx]
+            signature.append(char)
+
+
+class BasicCompression (Compression):
+    """
+    A basic compressor using a simple, fast algorithm.
+    """
+    # log = Logger.getLogger(StringCompressorBasic)
+
+    def __call__(self, string, alphabet, C, N):
+        return self._core(string, alphabet, C, N)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        acc = 0
+        for i in xrange(N):
+            val = ord(string[str_pos + i])
+            val <<= i * 8 % 56
+            acc ^= val
+            acc = abs(acc)
+
+        return acc
+
+
+class CRCCompression (Compression):
+
+    def __call__(self, string, alphabet, C, N):
+        return self._core(string, alphabet, C, N)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        return binascii.crc32(string[str_pos:str_pos + N]) + 2**32
+
+
+class MD5Compression (Compression):
+
+    def __call__(self, string, alphabet, C, N):
+        return self._core(string, alphabet, C, N)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        return int(md5.new(string[str_pos:str_pos + N]).hexdigest(), 16)
+
+
+class CBasicCompression (Compression):
+
+    def __call__(self, string, alphabet, C, N):
+        # This will probably have to be Swig C call,
+        # return compressor.core(string, my_C_hash_n, my_C_add_char)
+        return self._core(string, alphabet, C, N)
+
+    def _hash_neighborhood(self, string, str_pos, N):
+        return basic(string, str_pos, N)
+
+
+class Compressor (Calculation):
+    _alphabet = alphabet.ALPHABET_BASIC
+
+    def __init__(self, compression=BasicCompression(), C=150, N=8,
+                 alphabet=None, **kwargs):
+        super(Compressor, self).__init__(compression, **kwargs)
+
         self.C = C
         self.N = N
 
         self.logger = logging.getLogger(__name__)
 
-        # STYLE QUESTION to ask yury about here.
         if alphabet is not None:
             self.set_alphabet(alphabet)
 
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-
-        # There should probably be getters and setters to check for positivity
-        # of C and N. Zero value C will throw a division-by-zero error and
-        # non-positive N will result in infinite loop.
+    def __copy__(self):
+        c = type(self).__init__()
+        c.__dict__.update(self.__dict__)
+        return c
 
     def setC(self, c):
         self.C = c
@@ -42,13 +127,19 @@ class ACompressor:
     def getN(self):
         return self.N
 
+    def get_algorithm(self):
+        return self._compression
+
+    def set_algorithm(self, alg):
+        self._compression = alg
+
     def get_alphabet(self):
-        return self._chars
+        return self._alphabet
 
     def set_alphabet(self, chars):
         try:
             if len(chars) >= 0:
-                self._chars = chars
+                self._alphabet = chars
             else:
                 raise ValueError("Character alphabet for compression scheme " +
                                  "must be non-zero in length")
@@ -70,87 +161,5 @@ class ACompressor:
                                 'string to compress.')
             self.logger.warning(warning)
 
-        return self._compress(string)
-
-    def _compress(self, string):
-        raise NotImplementedError('ACompressor does not implement a ' +
-                                  'compression algorithm.')
-
-    def _core(self, string):
-        sig = list()
-        str_pos = 0
-        str_len = len(string)
-
-        while str_pos + self.N < str_len:
-            h = self._hash_neighborhood(string, str_pos, self.N)
-            self._add_char(sig, h)
-            str_pos = str_pos + 1
-
-        return ''.join(sig)
-
-    def _hash_neighborhood(self, string, str_pos, N):
-        raise NotImplementedError("The '" + self.__class__.__name__ +
-                                  "' compressor module has not implemented " +
-                                  "_hash_neighborhood.")
-
-    def _add_char(self, signature, _hash):
-        """
-        Accept a list of characters 'signature' and append a random character
-        from alphabet with 1/C liklihood. This is a function of '_hash'. That
-        is, identical values of '_hash' must always add the same character.
-        """
-        alpha_len = len(self.get_alphabet())
-
-        if _hash % self.C == 0:
-            indx = _hash % alpha_len
-            char = self.get_alphabet()[indx]
-            signature.append(char)
-
-
-class StringCompressorBasic (ACompressor):
-    """
-    A basic compressor using a simple, fast algorithm.
-    """
-    # log = Logger.getLogger(StringCompressorBasic)
-
-    def _compress(self, string):
-        return self._core(string)
-
-    def _hash_neighborhood(self, string, str_pos, N):
-        acc = 0
-        for i in xrange(N):
-            val = ord(string[str_pos + i])
-            val <<= i * 8 % 56
-            acc ^= val
-            acc = abs(acc)
-
-        return acc
-
-
-class StringCompressorCRC(ACompressor):
-
-    def _compress(self, string):
-        return self._core(string)
-
-    def _hash_neighborhood(self, string, str_pos, N):
-        return binascii.crc32(string[str_pos:str_pos + N]) + 2**32
-
-
-class StringCompressorMD5(ACompressor):
-
-    def _compress(self, string):
-        return self._core(string)
-
-    def _hash_neighborhood(self, string, str_pos, N):
-        return int(md5.new(string[str_pos:str_pos + N]).hexdigest(), 16)
-
-
-class StringCompressorCBasic(ACompressor):
-
-    def _compress(self, string):
-        # this will probably have to be Swig C call
-        # return compressor.core(string, my_C_hash_n, my_C_add_char)
-        return self._core(string)
-
-    def _hash_neighborhood(self, string, str_pos, N):
-        return basic(string, str_pos, N)
+        return self.get_algorithm.__call__(string, self._alphabet,
+                                           self.C, self.N)
