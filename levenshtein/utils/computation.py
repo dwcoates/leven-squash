@@ -14,7 +14,7 @@ class Computation:
         self._time = time
 
     def time(self):
-n return self._time
+        return self._time
 
     def value(self):
         return self._value
