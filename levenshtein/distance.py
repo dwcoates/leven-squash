@@ -1,29 +1,29 @@
-from Levenshtein.StringMatcher import StringMatcher
+from Levenshtein import distance as levenshtein_distance
 
+from levenshtein.utils.process import *
 from levenshtein.utils.computation import CalculationCache
 
 
-class LDAlgorithm:
+class LDAlgorithm (Process):
+    # Probably will want an approximation algorithm here. Those have to
+    # be equipped with some error factor.
 
-    def distance(self, str1, str2):
-        raise NotImplemented()
-
-
-class CachedLDAlgorithm:
-
-    def __init__(self, ld_algorithm):
-        self._ld = ld_algorithm
-        self._cache = CalculationCache()
-
-    def distance(self, str1, str2):
-        return self._cache.produce(self._ld.distance, str1, str2)
+    def __call__(self, str1, str2):
+        raise NotImplemented
 
 
-class AbsoluteLD(LDAlgorithm):
+class Absolute (LDAlgorithm):
     """Simple wrapper class for encapsulating the
     Levenshtein.StringMatcher.distance LD algorithm."""
 
-    def distance(self, str1, str2):
-        sm = StringMatcher(None, str1, str2)
+    def __call__(self, str1, str2):
+        return levenshtein_distance(str1, str2)
 
-        return sm.distance()
+
+class LevenDistance (Calculation):
+
+    def __init__(self, algorithm=Absolute(), **kwargs):
+        super(LevenDistance, self).__init__(algorithm, kwargs)
+
+    def distance(self, str1, str2):
+        return self.get_algorithm().__call__(str1, str2)
