@@ -110,6 +110,11 @@ class Compressor (Calculation):
         if alphabet is not None:
             self.set_alphabet(alphabet)
 
+    def __copy__(self):
+        c = type(self).__init__()
+        c.__dict__.update(self.__dict__)
+        return c
+
     def setC(self, c):
         self.C = c
 

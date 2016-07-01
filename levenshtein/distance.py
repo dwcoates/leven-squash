@@ -25,5 +25,10 @@ class LevenDistance (Calculation):
     def __init__(self, algorithm=Absolute(), **kwargs):
         super(LevenDistance, self).__init__(algorithm, kwargs)
 
+    def __copy__(self):
+        c = type(self).__init__()
+        c.__dict__.update(self.__dict__)
+        return c
+
     def distance(self, str1, str2):
         return self.get_algorithm().__call__(str1, str2)
