@@ -5,10 +5,11 @@ import copy
 
 from levenshtein.utils import alphabet
 from levenshtein.utils.computation import CalculationCache
+from levenshtein.utils.process import *
 from compressor import basic
 
 
-class Compression:
+class Compression (Process):
 
     def __call__(self, string, alphabet, C, N):
         raise NotImplementedError("Compression is a template for " +
@@ -94,30 +95,20 @@ class CBasicCompression (Compression):
         return basic(string, str_pos, N)
 
 
-class Compressor:
+class Compressor (Calculation):
     _alphabet = alphabet.ALPHABET_BASIC
 
-    def __init__(self, C=150, N=8, compression=BasicCompression(), alphabet=None):
+    def __init__(self, compression=BasicCompression(), C=150, N=8,
+                 alphabet=None, **kwargs):
+        super(Compressor, self).__init__(compression, **kwargs)
+
         self.C = C
         self.N = N
-        self._compression = compression
 
         self.logger = logging.getLogger(__name__)
 
-        # STYLE QUESTION to ask yury about here.
         if alphabet is not None:
             self.set_alphabet(alphabet)
-
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-
-        # There should probably be getters and setters to check for positivity
-        # of C and N. Zero value C will throw a division-by-zero error and
-        # non-positive N will result in infinite loop.
 
     def setC(self, c):
         self.C = c
@@ -130,6 +121,12 @@ class Compressor:
 
     def getN(self):
         return self.N
+
+    def get_algorithm(self):
+        return self._compression
+
+    def set_algorithm(self, alg):
+        self._compression = alg
 
     def get_alphabet(self):
         return self._alphabet
@@ -159,30 +156,5 @@ class Compressor:
                                 'string to compress.')
             self.logger.warning(warning)
 
-        return self._compression(string, self._alphabet, self.C, self.N)
-
-
-class CachedCompressor (Compressor):
-
-    def __init__(self, C, N, compression=BasicCompression(), alphabet=None):
-        self._compressor = Compressor(C, N, compression, alphabet)
-        self._cache = CalculationCache()
-
-    def setC(self, c):
-        self._compressor.setC(c)
-
-        self._cache.reset_cache()
-
-    def setN(self, n):
-        self._compressor.setN(n)
-
-        self._cache.reset_cache()
-
-    def getC(self):
-        return self._compressor.getC()
-
-    def getN(self):
-        return self._compressor.getN()
-
-    def compress(self, string):
-        return self._cache.produce(self._compressor.compress, string)
+        return self.get_algorithm.__call__(string, self._alphabet,
+                                           self.C, self.N)
