@@ -8,7 +8,7 @@ class LDAlgorithm (Process):
     # Probably will want an approximation algorithm here. Those have to
     # be equipped with some error factor.
 
-    def __call__(self, str1, str2):
+    def _execute(self, str1, str2):
         raise NotImplemented
 
 
@@ -16,7 +16,7 @@ class Absolute (LDAlgorithm):
     """Simple wrapper class for encapsulating the
     Levenshtein.StringMatcher.distance LD algorithm."""
 
-    def __call__(self, str1, str2):
+    def _execute(self, str1, str2):
         return levenshtein_distance(str1, str2)
 
 
@@ -26,7 +26,7 @@ class LevenDistance (Calculation):
         super(LevenDistance, self).__init__(algorithm, kwargs)
 
     def __copy__(self):
-        c = type(self).__init__()
+        c = type(self)()
         c.__dict__.update(self.__dict__)
         return c
 

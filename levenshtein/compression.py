@@ -11,7 +11,7 @@ from compressor import basic
 
 class Compression (Process):
 
-    def __call__(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet, C, N):
         raise NotImplementedError("Compression is a template for " +
                                   "compression algorithms. Not implemented.")
 
@@ -52,7 +52,7 @@ class BasicCompression (Compression):
     """
     # log = Logger.getLogger(StringCompressorBasic)
 
-    def __call__(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet, C, N):
         return self._core(string, alphabet, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
@@ -68,7 +68,7 @@ class BasicCompression (Compression):
 
 class CRCCompression (Compression):
 
-    def __call__(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet, C, N):
         return self._core(string, alphabet, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
@@ -77,7 +77,7 @@ class CRCCompression (Compression):
 
 class MD5Compression (Compression):
 
-    def __call__(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet, C, N):
         return self._core(string, alphabet, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
@@ -86,7 +86,7 @@ class MD5Compression (Compression):
 
 class CBasicCompression (Compression):
 
-    def __call__(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet, C, N):
         # This will probably have to be Swig C call,
         # return compressor.core(string, my_C_hash_n, my_C_add_char)
         return self._core(string, alphabet, C, N)
@@ -111,7 +111,7 @@ class Compressor (Calculation):
             self.set_alphabet(alphabet)
 
     def __copy__(self):
-        c = type(self).__init__()
+        c = type(self)()
         c.__dict__.update(self.__dict__)
         return c
 
@@ -161,5 +161,10 @@ class Compressor (Calculation):
                                 'string to compress.')
             self.logger.warning(warning)
 
-        return self.get_algorithm.__call__(string, self._alphabet,
-                                           self.C, self.N)
+        print("type to copmress: " + str(type(string)))
+        print("type alphabet: " + str(type(self._alphabet)))
+        print("type N: " + str(type(self.N)))
+        print("type C: " + str(type(self.C)))
+        print("algorithm: " + self.get_algorithm().__class__.__name__)
+        return self.get_algorithm().__call__(string, self._alphabet,
+                                             self.C, self.N)

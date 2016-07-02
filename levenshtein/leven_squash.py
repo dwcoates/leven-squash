@@ -26,23 +26,17 @@ class LevenSquash(object):
     # of signature LD and compression factor to adjust the expectation.
     sigRatio = 0.030
 
-    def __init__(self, compressor=None, dist_alg=None):
+    def __init__(self, compressor=Compressor(), dist_alg=LevenDistance()):
         # Default compression scheme. Note that this has a fairly large C,
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
-        if compressor is None:
-            self._compressor = Compressor()
-        else:
-            self._compressor = compressor
+        self._compressor = compressor
         logger.info("Configured leven-squash with %s compression scheme.",
                     self._compressor.__class__.__name__)
 
         # Default distance calculation alasgorithm is the standard algorithm
         # in n*m time and max(n,m) space complexity
-        if dist_alg is None:
-            self._dist_alg = LevenDistance()
-        else:
-            self._dist_alg = dist_alg
+        self._dist_alg = dist_alg
 
         logger.info("Configured leven-squash with %s LD algorithm.",
                     self._dist_alg.__class__.__name__)
@@ -118,11 +112,17 @@ class LevenSquash(object):
     def _estimate(self, str1, str2):
         logger.info("Squashing distance between two strings...")
 
+        print("string 1 type: " + str(type(str1)))
+        print("string 2 type: " + str(type(str2)))
         sig1 = self._compressor.compress(str1)
         sig2 = self._compressor.compress(str2)
 
+        print("sig 1 type: " + str(type(sig1)))
+        print("sig 2 type: " + str(type(sig2)))
+
         logger.info('Computing signature distance...')
 
+        print(sig1 + "\n\n\n" + sig2)
         squash_dist = self.calculate(sig1, sig2)
 
         logger.info("Signature distance computed using %s LD algorithm",
@@ -143,9 +143,9 @@ class SmartLevenSquash:
 
     def __init__(self, compressor=Compressor(), dist_alg=LevenDistance()):
         # this should do a deepcopy
-        comp = copy(compressor)
+        comp = copy.copy(compressor)
         comp.set_cache(True)
-        alg = copy(dist_alg)
+        alg = copy.copy(dist_alg)
         alg.set_cache(True)
 
         self._ls = LevenSquash(comp, alg)

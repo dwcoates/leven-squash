@@ -16,7 +16,7 @@ class ScoreDistance():
         self._str1 = str1
         self._str2 = str2
 
-        self._sls = SmartLevenSquash(ls.get_compressor, ls.get_ld_alg)
+        self._sls = SmartLevenSquash(ls.get_compressor(), ls.get_ld_alg())
 
     def get_strings(self):
         return (self._str1, self._str2)
@@ -44,12 +44,12 @@ class ScoreDistance():
         self._sls.setN(n)
 
     def get(self, dist_alg):
-        if dist_alg not in self._DISTANCE_FUNCTIONS:
+        if dist_alg.__name__ not in self._DISTANCE_FUNCTIONS:
             raise ValueError("'" + dist_alg.__name__ +
                              "' is not an accepted LevenSquash distance " +
                              "measure.")
         else:
-            return getattr(self._sls, dist_alg)(self._str1, self._str2)
+            return getattr(self._sls, dist_alg.__name__)(self._str1, self._str2)
 
     def diff(self, dist_alg1, dist_alg2):
         c1 = self.get(dist_alg1)
@@ -58,6 +58,7 @@ class ScoreDistance():
         return Computation(self.difference(c1.value(), c2.value()),
                            self.difference(c1.time(), c2.time()))
 
+    @staticmethod
     def difference(a, b):
         """
         Accepts two numbers, 'a' and 'b',  and returns a score of how
