@@ -4,7 +4,9 @@ import time
 
 import levenshtein
 from levenshtein.leven_squash import LevenSquash
+from levenshtein.compression import *
 from levenshtein.utils.entropy import ShannonBasic
+from levenshtein.utils.computation import *
 from levenshtein.score import ScoreDistance
 
 
@@ -132,251 +134,6 @@ from levenshtein.score import ScoreDistance
 #     . . .
 #     . . .
 #     ]
-
-def parse_file(fname):
-    """
-    Read file, and parse for description and text. Returns tuple with elements
-    (text, description)
-    """
-    with open(fname) as f:
-        text = f.read().replace('\n', '')
-
-    # Currently just returns file text
-    description = ""
-
-    return (text, description)
-
-
-def assess_estimation(sd):
-    """
-    Produce a set of statistics on the difference between the two strings,
-    'str1' and 'str2', using different measures. Returns a dict composed of
-    describe_levenshquash(ls) and assess_distance_measures(str1, str2, ls)
-    under keys "LEVENSQUASH MODULE" and "DISTANCE"
-    """
-    d = dict()
-
-    d["LEVENSQUASH MODULE"] = describe_levensquash(sd.get_leven_squash())
-    d["ESTIMATE"] = describe_measure(LevenSquash.estimate, sd)
-    d["CORRECTED"] = describe_measure(LevenSquash.estimate_corrected, sd)
-    return d
-
-
-def describe_file(fname):
-    """
-    Produce an assessment of the file 'fname' as a set of values. Returns a
-    dict composed of describe_file(fname) and describe_compression(file_text)
-    under keys ATTRIBUTES and COMPRESSION.
-    """
-    d = dict()
-
-    file_contents = parse_file(fname)
-    file_text = file_contents[0]
-    file_description = file_contents[1]
-
-    d["PATH"] = fname
-    d["DESCRIPTION"] = file_description
-    d["CONTENT"] = describe_string(file_text)
-
-    return d
-
-
-def describe_files(f1, f2, diff_string="NOT SPECIFIED"):
-    """
-    Read in files 'f1' and 'f2' and produce their assessment. Returns a dict
-    with key DIFFERENCE and key FILES, consisting of dicts returned by
-    describe_file(f1) and describe_file(f2).
-    """
-    d = dict()
-
-    d["DIFFERENCE"] = diff_string
-
-    d[f1] = describe_file(f1)
-    d[f2] = describe_file(f2)
-
-    return d
-
-
-def describe_levensquash(ls):
-    """
-    Produce a set of descriptions of the LevenSquash instance 'ls'. Returns
-    dict composed of describe_compressor and describe_LD_algorithm with keys
-    COMPRESSOR and 'LD ALGORITHM'.
-
-    """
-    d = dict()
-
-    d["COMPRESSOR"] = describe_compressor(ls.get_compressor())
-    d["DISTANCE ALGORITHM"] = describe_LD_algorithm(ls.get_ld_alg())
-
-    return d
-
-
-def describe_compressor(compressor):
-    """
-    Produce a set of descriptions of the compressor instance 'compressor'.
-    Returns dict with keys TYPE, C, N, and DESCRIPTION.
-
-    """
-    d = dict()
-
-    d["TYPE"] = compressor.__class__.__name__
-    d["C"] = compressor.getC()
-    d["N"] = compressor.getN()
-
-    d["DESCRIPTION"] = compressor.__doc__.replace('\n', '')
-
-    return d
-
-
-def describe_LD_algorithm(algorithm):
-    """
-    Produce a set of descriptions of the LD algorithm instance 'algorithm'.
-    Returns dict with keys TYPE and DESCRIPTION.
-
-    """
-    d = dict()
-
-    d["TYPE"] = algorithm.__class__.__name__
-
-    d["DESCRIPTION"] = algorithm.__doc__.replace('\n', '')
-
-    return d
-
-
-def describe_string(string):
-    """
-    Produce a set of basic attributes of the string 'string'. Returns a dict
-    with keys LENGTH and ENTROPY.
-    """
-    d = dict()
-
-    d["TEXT"] = string
-    d["LENGTH"] = len(string)
-    d["ENTROPY"] = ShannonBasic().calculate(string)
-
-    return d
-
-
-def describe_compression(string, C, N):
-    """
-    Produce data on the various compressors acting on string.
-    """
-    d = dict()
-
-    d["C"] = C
-    d["N"] = N
-    d["COMPRESSION"] = assess_compressors(string, C, N)
-
-    return d
-
-
-def assess_compressors(string, C, N):
-    d = dict()
-
-    d["BASIC"] = assess_compressor(
-        string, levenshtein.compression.StringCompressorBasic(C, N))
-    d["C BASIC"] = assess_compressor(
-        string, levenshtein.compression.StringCompressorCBasic(C, N))
-    d["CRC"] = assess_compressor(
-        string, levenshtein.compression.StringCompressorCRC(C, N))
-    d["BASIC"] = assess_compressor(
-        string, levenshtein.compression.StringCompressorMD5(C, N))
-
-    return d
-
-
-def assess_compressor(string, compressor):
-    """
-    Produce data on compressor 'compressor' acting on 'string'. Returns a dict
-    with keys 'TIME' and 'ACCURACY' composed with a dict returned by
-    describe_string(string).
-    """
-    d = dict()
-
-    start = time.clock()
-    sig = compressor.compress(string)
-    end = time.clock()
-    t = end - start
-
-    sig_description = describe_string(sig)
-
-    difference = ScoreDistance.difference
-    accuracy = difference(sig_description["LENGTH"],
-                          (len(string) / float(compressor.getC())))
-
-    d["SIGNATURE"] = sig_description
-    d["TIME"] = t
-    d["ACCURACY"] = accuracy
-
-    return d
-
-
-def assess_string(string, compressor):
-    """
-    Produce a set of statistics on the string 'string'. Returns a dict
-    composed ofdescribe_string(string) and
-    describe_compression(string, compressor) under keys COMPRESSION and
-    ATTRIBUTES.
-
-    """
-    d = describe_string(string)
-
-    d["COMPRESSION"] = describe_compression(
-        string, compressor.getC(), compressor.getN())
-
-    return d
-
-
-def describe_measure(measure, sd):
-    """
-    Produce a set of statistics on ls.calculate(). Returns a dict with keys
-    VALUE, SPEED, SIMILARITY
-    """
-    d = dict()
-    diff = ScoreDistance.difference
-    m = measure.__name__
-
-    d["VALUE"] = sd.value(m)
-    d["TIME"] = sd.time(m)
-    d["ERROR"] = diff(sd.value(m), sd.value("calculate"))
-
-    return d
-
-
-def assess_calculate(str1, str2, ls):
-    """
-    Produce a set of statistics on ls.calculate(). Returns a dict with keys
-    VALUE, SPEED, SIMILARITY
-    """
-    return describe_measure(str1, str2, ls.calculate)
-
-
-def assess_estimate(str1, str2, ls):
-    """
-    Return a set of statistics on ls.estimate(). Also specifies value of
-    similarity and error of similarity value.
-    """
-    d = describe_measure(str1, str2, ls.estimate)
-
-    start = time.clock()
-    exact = ls.calculate()
-    end = time.clock()
-    t_exact = end - start
-
-    d["SPEEDUP"] = ScoreDistance.difference(d["TIME"], t_exact)
-    d["ACCURACY"] = ScoreDistance.difference(d["VALUE"], exact)
-
-    pass
-
-
-def assess_estimate_corrected(str1, str2, ls):
-    """
-    Return a set of statistics on ls.estimate_corrected(). Also specifies
-    value of similarity, error of similarity value, and improvement over
-    ls.estimate().
-    """
-    pass
 
 
 ################################################
@@ -523,9 +280,13 @@ def compress(str1, str2, str1_name, str2_name, C, N):
     return d
 
 
-class DemoBase:
+class Demo(object):
 
-    def get():
+    def __init__(self, result, note="NOT SPECIFIED", **kwargs):
+        self._note = note
+        self._result = result
+
+    def get(self):
         """
         Return a dict representation.
         """
@@ -553,11 +314,11 @@ class DemoBase:
             return pickle.load(f)
 
 
-class Description(DemoBase):
+class Description(Demo):
     pass
 
 
-class Assessment(DemoBase):
+class Assessment(Demo):
     _DESCRIPTION_TYPE = None
 
     def __init__(self, DESCRIPTION_TYPE):
@@ -598,10 +359,11 @@ class Assessment(DemoBase):
 
 class StringDescription(Description):
 
-    def __init__(self, string, note):
-        self._string = string
+    def __init__(self, note, string, limit=1000):
         self._note = note
-        self._entropy = ShannonBasic().calculate(string)
+        self._string = string
+        self._entropy = ShannonBasic().calculate(self._string)
+        self._string_limit = limit
 
     def get(self):
         """
@@ -609,7 +371,8 @@ class StringDescription(Description):
         """
         d = dict()
 
-        d["TEXT"] = self._string
+        d["NOTE"] = self._note
+        d["TEXT"] = self._string[0:self._string_limit]
         d["LENGTH"] = self.get_length()
         d["ENTROPY"] = self._entropy
 
@@ -627,14 +390,24 @@ class StringDescription(Description):
 
 class CompressorDescription(Description):
 
-    def __init__(self, compressor, string):
-        signature = compressor.compress(string)
+    def __init__(self, name, compressor, string_desc):
+        string = string_desc.get_text()
+        signature = ComputationManager.CREATE_COMPUTATION(
+            compressor.compress, string)
+        print type(signature.value())
         diff = ScoreDistance.difference
-        self._name = compressor.__class__.__name__
-        self._sig_desc = StringDescription(signature.value())
+
+        if name is None:
+            self._name = compressor.__class__.__name__
+        else:
+            self._name = name
+        self._source_len = string_desc.get_length()
+        self._source_entropy = string_desc.get_entropy()
+        self._sig_desc = StringDescription(
+            "Signature: " + self._name, signature.value())
         self._time = signature.time()
         self._accuracy = diff(self._sig_desc.get_length(),
-                              len(string) / compressor.getC())
+                              len(string) / float(compressor.getC()))
 
     def add(self, C, N):
         if N not in self._compressions:
@@ -643,8 +416,20 @@ class CompressorDescription(Description):
         self._compressions[N][C] = CompressorDescription(
             self._compressor, C, N)
 
+    def get(self):
+        d = dict()
 
-class CompressorAssessment(DemoBase):
+        d["SOURCE LENGTH"] = self._source_len
+        d["SOURCE ENTROPY"] = self._source_entropy
+        d["SIGNATURE DESCRIPTION"] = self._sig_desc.get()
+        d["TIME"] = self._time
+        d["ACCURACY"] = self._accuracy
+        d["DESCRIPTION"] = self._name
+
+        return d
+
+
+class CompressorAssessment(Assessment):
 
     def __init__(self, compressor):
         self._compressions = dict()
@@ -662,6 +447,11 @@ class CompressorAssessment(DemoBase):
         Return a dict representation.
         """
         d = dict()
+        for n in self._compressions:
+            for c in self._compressions[n]:
+                d[n][c] = self._compressions[n][c].get()
+
+        return d
 
         # create array of signatures
         # create array of lengths
@@ -678,13 +468,13 @@ class CompressorAssessment(DemoBase):
         """
 
 
-class FileDescription(DemoBase):
+class FileDescription(Demo):
 
     def __init__(self, fname):
         file_info = self._parse_file(fname)
 
-        self._content = StringDescription(file_info[0])
-        self._description = file_info[1]
+        self._content = StringDescription(file_info[1], file_info[0])
+        self._description = fname
 
     def get(self):
         """
@@ -692,9 +482,10 @@ class FileDescription(DemoBase):
         """
         d = dict()
 
-        d["CONTENTS"] = self._text.get()
+        d["CONTENTS"] = self._content.get()
         d["DESCRIPTION"] = self._description
-        pass
+
+        return d
 
     @staticmethod
     def _parse_file(fname):
@@ -709,3 +500,107 @@ class FileDescription(DemoBase):
         description = ""
 
         return (text, description)
+
+
+class FileComparison(Demo):
+
+    def __init__(self, fname1, fname2, difference="NOT SPECIFIED"):
+        self._f1 = FileDescription(fname1)
+        self._f2 = FileDescription(fname2)
+        self._note = "Difference: " + difference
+
+    def get(self):
+        d = dict()
+
+        d["FILE 1"] = self._f1.get()
+        d["FILE 2"] = self._f2.get()
+
+        return d
+
+
+class MeasureDescription(Demo):
+    """
+    Produce a set of statistics on ls.calculate(). Returns a dict with keys
+    VALUE, SPEED, SIMILARITY
+    """
+
+    def __init__(self, note, sd, measure):
+        c = sd.get(measure)
+        self._value = c.value()
+        self._time = c.time()
+        self._description = note + measure.__name__
+
+    def get(self):
+        d = dict()
+
+        d["VALUE"] = self._value
+        d["TIME"] = self._time
+        d["DESCRIPTION"] = self._description
+
+        return d
+
+
+class EstimationDescription(MeasureDescription):
+
+    def __init__(self, note, sd):
+        super(type(self), self).__init__(note, sd, LevenSquash.estimate)
+        self._error = sd.diff(
+            LevenSquash.estimate, LevenSquash.calculate)
+
+    def get(self):
+        d = dict()
+        d["ERROR"] = self._error
+        d.update(super(type(self), self).get())
+
+        return d
+
+
+class DistanceDescription(MeasureDescription):
+
+    def __init__(self, note, sd):
+        super(type(self), self).__init__(note, sd, LevenSquash.calculate)
+
+
+def assess_estimation(sd):
+    """
+    Produce a set of statistics on the difference between the two strings,
+    'str1' and 'str2', using different measures. Returns a dict composed of
+    describe_levenshquash(ls) and assess_distance_measures(str1, str2, ls)
+    under keys "LEVENSQUASH MODULE" and "DISTANCE"
+    """
+    d = dict()
+
+    d["LEVENSQUASH MODULE"] = describe_levensquash(sd.get_leven_squash())
+    d["ESTIMATE"] = describe_measure(LevenSquash.estimate, sd)
+    d["CORRECTED"] = describe_measure(LevenSquash.estimate_corrected, sd)
+    return d
+
+
+def describe_levensquash(ls):
+    """
+    Produce a set of descriptions of the LevenSquash instance 'ls'. Returns
+    dict composed of describe_compressor and describe_LD_algorithm with keys
+    COMPRESSOR and 'LD ALGORITHM'.
+
+    """
+    d = dict()
+
+    d["COMPRESSOR"] = describe_compressor(ls.get_compressor())
+    d["DISTANCE ALGORITHM"] = describe_LD_algorithm(ls.get_ld_alg())
+
+    return d
+
+
+def describe_LD_algorithm(algorithm):
+    """
+    Produce a set of descriptions of the LD algorithm instance 'algorithm'.
+    Returns dict with keys TYPE and DESCRIPTION.
+
+    """
+    d = dict()
+
+    d["TYPE"] = algorithm.__class__.__name__
+
+    d["DESCRIPTION"] = algorithm.__doc__.replace('\n', '')
+
+    return d
