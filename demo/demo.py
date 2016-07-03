@@ -141,124 +141,6 @@ from levenshtein.score import ScoreDistance
 ################################################
 
 
-def test():
-    # throeaway test
-    from levenshtein.leven_squash import LevenSquash
-    t = 0
-    d = dict()
-
-    print("TEST: PROCESSING 4 DEMOS...")
-    print("\n\nTEST: DEMO 1...")
-    f1 = "data/adventures_of_huckleberry_finn.txt"
-    f2 = "data/adventures_of_tom_sawyer.txt"
-    d.update(clean(demo(f1, f2, LevenSquash(),
-                        "Two similar stories written by the same author"), f1, f2))
-    t += d["DEMO RUN TIME"]
-    save_data(d, "huck_and_sawyer")
-
-    print("\n\nTEST: DEMO 2...")
-    f1 = "data/dantes_inferno_english_sibbald.txt"
-    f2 = "data/dantes_inferno_english_longfellow.txt"
-    d.update(clean(demo(f1, f2, LevenSquash(),
-                        "Two different translations of the same book"), f1, f2))
-    t += d["DEMO RUN TIME"]
-    save_data(d, "sibbald_and_longfellow")
-
-    print("\n\nTEST: DEMO 3...")
-    f1 = "data/adventures_of_huckleberry_finn.txt"
-    f2 = "data/dantes_inferno_english_sibbald.txt"
-    d.update(clean(demo(f1, f2, LevenSquash(),
-                        "Two totally different english books"), f1, f2))
-    t += d["DEMO RUN TIME"]
-    save_data(d, "huck_and_sibbald")
-
-    print("\n\nTEST: DEMO 4...")
-    f1 = "data/dantes_inferno_italian.txt"
-    f2 = "data/dantes_inferno_english_longfellow.txt"
-    d.update(clean(demo(f1, f2, LevenSquash(),
-                        "Same book in two different languages"), f1, f2))
-    t += d["DEMO RUN TIME"]
-    save_data(d, "italian_and_english")
-
-    print("\n\nTEST: FINISHED.")
-    print("\TEST: TIME TO COMPLETE: " + str(t))
-
-    return d
-    # return pp.pformat(demo(ls, f1, f2))
-    # print(pp.pformat(demo(ls, f1, f2)))
-
-
-def clean(d, f1, f2):
-    d["INPUT"][f1]["CONTENT"]["TEXT"] = ""
-    d["INPUT"][f2]["CONTENT"]["TEXT"] = ""
-
-    return d
-
-
-def test_load(d="data"):
-    return load_data(d)
-
-
-def pdemo(demo_results):
-    pp = pprint.PrettyPrinter(indent=4)
-
-    pp.pprint(demo_results)
-
-    # return pp.pformat(demo(ls, f1, f2))
-    # print(pp.pformat(demo(ls, f1, f2)))
-
-
-def demo(f1, f2, ls=LevenSquash(), description=""):
-    start = time.clock()
-    print("DEMO: DEMO START...")
-
-    d = dict()
-
-    print("DEMO: READING FILES '" + f1 + "' AND '" + f2 + "'...")
-    d["INPUT"] = describe_files(f1, f2, description)
-
-    f1_text = d["INPUT"][f1]["CONTENT"]["TEXT"]
-    f2_text = d["INPUT"][f2]["CONTENT"]["TEXT"]
-
-    print("DEMO: CALCULATING ABSOLUTE LEVENSHTEIN DISTANCE...")
-    sd = ScoreDistance(f1_text, f2_text, ls)
-
-    d["DISTANCE"] = describe_measure(LevenSquash.calculate, sd)
-
-    n1 = 2
-    n2 = 10
-    c1 = 100
-    c2 = 250
-    print("DEMO: ESTIMATING OVER RANGES OF C=" + str(c1) + ",C=" + str(c2) +
-          " AND N=" + str(n1) + ",N=" + str(n2) + " ...")
-    print("DEMO: N BETWEEN " + str(n1) + " AND " + str(n2))
-    estimates = list()
-    compressions = list()
-    for n in xrange(n1, n2):
-        print("DEMO: N=" + str(n))
-        sd.setN(n)
-        for c in xrange(c1, c2, 10):
-            sd.setC(c)
-            estimates.append(estimate(sd))
-            compressions.append(
-                compress(f1_text, f2_text, f1, f2, sd.getC(), sd.getN()))
-
-    # computations = compute(f1_text, f2_text, sd, f1, f2)
-
-    d["ESTIMATION"] = estimates
-    d["COMPRESSION"] = compressions
-
-    end = time.clock()
-    t = end - start
-
-    print("DEMO: FINISH.")
-    print("DEMO: TIME TO PROCESS: " + str(t))
-
-    d["DEMO RUN TIME"] = t
-
-    return d
-
-
 def estimate(sd):
     d = dict()
 
@@ -473,7 +355,9 @@ class FileDescription(Demo):
     def __init__(self, fname):
         file_info = self._parse_file(fname)
 
-        self._content = StringDescription(file_info[1], file_info[0])
+        self._name = file_info[1]
+        self._content = StringDescription(
+            "contents of " + self._name, file_info[0])
         self._description = fname
 
     def get(self):
@@ -486,6 +370,12 @@ class FileDescription(Demo):
         d["DESCRIPTION"] = self._description
 
         return d
+
+    def get_name(self):
+        return self._name
+
+    def get_text(self):
+        return self._content.get_text()
 
     @staticmethod
     def _parse_file(fname):
@@ -505,17 +395,26 @@ class FileDescription(Demo):
 class FileComparison(Demo):
 
     def __init__(self, fname1, fname2, difference="NOT SPECIFIED"):
-        self._f1 = FileDescription(fname1)
-        self._f2 = FileDescription(fname2)
+        self._files = dict()
+
+        f1 = FileDescription(fname1)
+        f2 = FileDescription(fname2)
+        self._files[fname1] = f1
+        self._files[fname2] = f2
+
         self._note = "Difference: " + difference
 
     def get(self):
         d = dict()
 
-        d["FILE 1"] = self._f1.get()
-        d["FILE 2"] = self._f2.get()
+        for f in self._files:
+            d[f] = self._files[f].get()
+        d["DIFFERENCE"] = self._note
 
         return d
+
+    def get_file_desc(self, fname):
+        return self._files[fname]
 
 
 class MeasureDescription(Demo):
@@ -540,12 +439,14 @@ class MeasureDescription(Demo):
         return d
 
 
-class EstimationDescription(MeasureDescription):
+class EstimateDescription(MeasureDescription):
 
     def __init__(self, note, sd):
         super(type(self), self).__init__(note, sd, LevenSquash.estimate)
+        # print("estimate: " + str(sd.get(LevenSquash.estimate)))
+        # print("calculate: " + str(sd.get(LevenSquash.calculate)))
         self._error = sd.diff(
-            LevenSquash.estimate, LevenSquash.calculate)
+            LevenSquash.estimate, LevenSquash.calculate).value()
 
     def get(self):
         d = dict()
@@ -561,46 +462,157 @@ class DistanceDescription(MeasureDescription):
         super(type(self), self).__init__(note, sd, LevenSquash.calculate)
 
 
-def assess_estimation(sd):
+class SquashDescription(Demo):
     """
     Produce a set of statistics on the difference between the two strings,
     'str1' and 'str2', using different measures. Returns a dict composed of
     describe_levenshquash(ls) and assess_distance_measures(str1, str2, ls)
     under keys "LEVENSQUASH MODULE" and "DISTANCE"
     """
-    d = dict()
 
-    d["LEVENSQUASH MODULE"] = describe_levensquash(sd.get_leven_squash())
-    d["ESTIMATE"] = describe_measure(LevenSquash.estimate, sd)
-    d["CORRECTED"] = describe_measure(LevenSquash.estimate_corrected, sd)
-    return d
+    def __init__(self, note, sd):
+        self._ls_desc = LevenSquashDescription(
+            "ls module desc", sd.get_leven_squash())
+        self._estimate_desc = EstimateDescription("a super cool estimate", sd)
+        self._corrected_desc = None
+
+    def get(self):
+        d = dict()
+
+        d["LEVENSQUASH MODULE"] = self._ls_desc.get()
+        d["ESTIMATE"] = self._estimate_desc.get()
+        d["CORRECTED"] = ""
+
+        return d
 
 
-def describe_levensquash(ls):
+class LevenSquashDescription(Demo):
     """
     Produce a set of descriptions of the LevenSquash instance 'ls'. Returns
     dict composed of describe_compressor and describe_LD_algorithm with keys
     COMPRESSOR and 'LD ALGORITHM'.
-
     """
-    d = dict()
 
-    d["COMPRESSOR"] = describe_compressor(ls.get_compressor())
-    d["DISTANCE ALGORITHM"] = describe_LD_algorithm(ls.get_ld_alg())
+    def __init__(self, note, ls):
+        self._comp_desc = ProcessDescription(
+            ls.get_compressor().get_algorithm())
+        self._alg_desc = ProcessDescription(ls.get_ld_alg().get_algorithm)
 
-    return d
+    def get(self):
+        d = dict()
+
+        d["COMPRESSOR"] = self._comp_desc.get()
+        d["DISTANCE ALGORITHM"] = self._alg_desc.get()
+
+        return d
 
 
-def describe_LD_algorithm(algorithm):
-    """
-    Produce a set of descriptions of the LD algorithm instance 'algorithm'.
-    Returns dict with keys TYPE and DESCRIPTION.
+class ProcessDescription(Demo):
 
-    """
-    d = dict()
+    def __init__(self, process):
+        self._type = process.__class__.__name__
+        # self._desc = process.__doc__.replace('\n', '')
 
-    d["TYPE"] = algorithm.__class__.__name__
+    def get(self):
+        d = dict()
 
-    d["DESCRIPTION"] = algorithm.__doc__.replace('\n', '')
+        d["TYPE"] = self._type
 
-    return d
+        return d
+
+
+class DemoFiles(Demo):
+
+    def add(ls):
+        """
+        Add results for ls to demo
+        """
+        pass
+
+    def __init__(self, f1, f2, ls):
+        start = time.clock()
+        print("DEMO: DEMO START...")
+
+        print("DEMO: READING FILES '" + f1 + "' AND '" + f2 + "'...")
+        self._file_comp = FileComparison(f1, f2)
+        text1 = self._file_comp.get_file_desc(f1).get_text()
+        text2 = self._file_comp.get_file_desc(f2).get_text()
+
+        self._score = ScoreDistance(text1, text2, ls)
+        print("DEMO: CALCULATING ABSOLUTE LEVENSHTEIN DISTANCE...")
+        self._distance = DistanceDescription(
+            "absolute distance: ", self._score)
+
+        print("DEMO: PRODUCING SQUASH DEMO...")
+        self._squash_desc = SquashDescription("squash desc", self._score)
+
+        print("DEMO: FINISH.")
+        print("DEMO: TIME TO PROCESS: " + str(time.clock() - start))
+
+    def get(self):
+        d = dict()
+
+        d["FILES"] = self._file_comp.get()
+        d["SQUASH"] = self._squash_desc.get()
+        d["DISTANCE"] = self._distance.get()
+
+        return d
+
+"""
+DistributedDemos contain ListedDemos or other DistributedDemos.
+ListedDemos can only contain Descriptions (terminal assessments)
+Both define an add() function that accepts the corresponding Description
+assessments either:
+   extend their related interface
+   are more generic
+
+N
+C
+NAME
+IS_CACHED
+SIGNATURE_DESCRIPTION
+
+every demo should have a name
+"""
+
+
+class ListedDemo(Demo):
+
+    def __init__(self, demos=[], name=""):
+        super(type(self), self).__init__(name)
+        self._demos = demos
+
+    def add(demo):
+        """
+        Add demo to list of demos
+        """
+        self._demos.append(demos)
+
+    def __repr__(self):
+        d = dict()
+
+        d[self.get_name()] = map(lambda d: d.__repr__(), self._demos)
+
+        return str(d)
+
+    def get(item=None):
+        if item is None:
+            return self._demos
+        else:
+            try:
+                item_results = map(lambda d: d.get(item), self._demos)
+                return ListedDemo(item_results, str(item) +
+                                  "s in '" + self._name + "'")
+            except:
+                ValueError()
+
+
+class DistributedDemo(ListedDemo):
+
+    def __init__(self, demos=[], name=""):
+        super(type(self), self).__init__(demos, name)
+        for demo in self._demos:
+            self.add(demo)
+
+    def add(self, demo):
+        pass
