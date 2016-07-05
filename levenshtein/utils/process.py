@@ -3,10 +3,13 @@ import inspect
 
 
 class Process (object):
+    """
+    Callable algorithm.
+    """
 
     def __call__(self, *args):
         try:
-            self._execute(self, *args)
+            return self._execute(*args)
         except:
             TypeError()
 
@@ -22,7 +25,6 @@ class CachedProcess (Process):
     def __init__(self, process):
         self._cache = CalculationCache()
         self._process = CachedProcess.MAKE_UNCACHED_PROCESS(process)
-        print("UNCACHED PROCESS TYPE: " + str(type(self._process)))
 
     def __call__(self, *args):
         try:
@@ -56,7 +58,7 @@ class Calculation (object):
 
     def __init__(self, process, *args, **kwargs):
         self._process = process
-        self.set_cache(kwargs.pop('cached', None))
+        self.set_cache(kwargs.pop('cached', False))
 
     def set_cache(self, cached):
         if cached is True:
@@ -65,6 +67,7 @@ class Calculation (object):
         else:
             self.set_algorithm(
                 CachedProcess.MAKE_UNCACHED_PROCESS(self._process))
+            print "algorithm set: " + self._process.__class__.__name__
 
     def set_algorithm(self, alg):
         self._process = alg
