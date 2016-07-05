@@ -100,7 +100,7 @@ class Compressor (Calculation):
 
     def __init__(self, compression=BasicCompression(), C=150, N=8,
                  alphabet=None, **kwargs):
-        super(Compressor, self).__init__(compression, **kwargs)
+        super(type(self), self).__init__(compression, **kwargs)
 
         self.C = C
         self.N = N
@@ -161,10 +161,7 @@ class Compressor (Calculation):
                                 'string to compress.')
             self.logger.warning(warning)
 
-        print("type to copmress: " + str(type(string)))
-        print("type alphabet: " + str(type(self._alphabet)))
-        print("type N: " + str(type(self.N)))
-        print("type C: " + str(type(self.C)))
-        print("algorithm: " + self.get_algorithm().__class__.__name__)
+        print "ALGORITH RETRIEVED: " + self.get_algorithm().__class__.__name__
+
         return self.get_algorithm().__call__(string, self._alphabet,
                                              self.C, self.N)
