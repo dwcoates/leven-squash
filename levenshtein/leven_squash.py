@@ -112,17 +112,11 @@ class LevenSquash(object):
     def _estimate(self, str1, str2):
         logger.info("Squashing distance between two strings...")
 
-        print("string 1 type: " + str(type(str1)))
-        print("string 2 type: " + str(type(str2)))
         sig1 = self._compressor.compress(str1)
         sig2 = self._compressor.compress(str2)
 
-        print("sig 1 type: " + str(type(sig1)))
-        print("sig 2 type: " + str(type(sig2)))
-
         logger.info('Computing signature distance...')
 
-        print(sig1 + "\n\n\n" + sig2)
         squash_dist = self.calculate(sig1, sig2)
 
         logger.info("Signature distance computed using %s LD algorithm",
@@ -166,7 +160,7 @@ class SmartLevenSquash:
         return self._ls.get_compressor()
 
     def get_ld_alg(self):
-        return self._ls.get_ls_alg()
+        return self._ls.get_ld_alg()
 
     def set_compressor(self, compressor):
         self._ls.set_compressor(compressor)
