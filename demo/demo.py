@@ -9,14 +9,7 @@ from levenshtein.utils.computation import *
 from levenshtein.score import ScoreDistance
 
 
-class AResult(object):
-
-    def __init__(self, data, name):
-        self._data = data
-        self._name = name
-
-    def get_name(self):
-        return self._name
+class ATest(object):
 
     def get_dict(self):
         raise NotImplemented
@@ -25,9 +18,28 @@ class AResult(object):
         return str(self.get_dict())
 
     def __str__(self):
+        return self._format_dict_repr(self.get_dict())
+
+    @classmethod
+    def _format_dict_repr(cls, d):
         pp = pprint.PrettyPrinter(indent=4)
 
-        return pp.pformat(self.get_dict())
+        return pp.pformat(d)
+
+
+class AResult(ATest):
+
+    def __init__(self, data, name):
+        self._data = data
+        if type(name) is not str:
+            raise TypeError("Result name must be a string.")
+        self._name = name
+
+    def get_name(self):
+        return self._name
+
+    def get_result(self):
+        raise NotImplemented
 
 
 class Terminal(AResult):
@@ -35,15 +47,15 @@ class Terminal(AResult):
     def __init__(self, result, name):
         super(type(self), self).__init__(result, name)
 
-    def get_result(self):
-        return self._data
-
     def get_dict(self):
         d = dict()
 
         d[self.get_name()] = self._data
 
         return d
+
+    def get_result(self):
+        return self._data
 
     def save_data(d, name):
         # TODO: Implement
@@ -56,25 +68,31 @@ class Terminal(AResult):
             return pickle.load(f)
 
 
-class Results(AResult):
+class Description(AResult):
 
     def __init__(self, results, name):
         data = dict()
-        for demo in results:
-            data[demo] = demo
+        try:
+            for demo in results:
+                data[demo.get_name()] = demo
+        except AttributeError:
+            raise TypeError("results provided must be a list of " +
+                            "Descriptions and/or Terminals")
         super(type(self), self).__init__(data, name)
 
     def get(self, demo_name):
         try:
-            return self._data[demo_name].get_result()
+            return self._data[demo_name]
         except:
             raise
 
         return None
 
+    def get_result():
+        return self._data()
+
     def get_dict(self):
         x = dict()
-        # print self._data
         for demo in self._data:
             x.update(self._data[demo].get_dict())
 
@@ -84,14 +102,18 @@ class Results(AResult):
         return d
 
 
-class ADemo(AResult):
+class ADemo(ATest):
     NAME = None
 
     def __init__(self, *args, **labels):
         self.NAME = labels.pop('name', self.NAME)
-        self._description = self.CREATE_DESCRIPTION(*args)
+        if self.NAME is None:
+            raise ValueError(
+                "Name unset by concrete Demo class '" +
+                self.__class__.__name__ + "'")
+        self._description = Description(self._CREATE_RESULTS(*args), self.NAME)
 
-    def CREATE_DESCRIPTION(self, *args):
+    def _CREATE_RESULTS(self, *args):
         raise NotImplemented
 
     def save_data(d, name):
@@ -107,11 +129,11 @@ class ADemo(AResult):
     def get_dict(self):
         return self._description.get_dict()
 
-    def get_name(self):
-        return self._description.get_name()
-
     def get(self, item):
         return self._description.get(item)
+
+    def get_description(self):
+        return self._description
 
 
 class StringDemo(ADemo):
@@ -121,102 +143,125 @@ class StringDemo(ADemo):
     DESCRIPTION = "DESCRIPTION"
     NAME = "STRING"
 
-    def __init__(self, string, str_description, str_limit=1000, **labels):
+    def __init__(self, string, str_description=None, str_limit=1000, **labels):
         super(type(self), self).__init__(string, str_description)
         self._limit = str_limit
 
     @classmethod
-    def CREATE_DESCRIPTION(self, string, str_description):
+    def _CREATE_RESULTS(self, string, str_description):
         results = list()
         results.append(Terminal(string, self.TEXT))
         results.append(Terminal(len(string), self.LENGTH))
         results.append(
             Terminal(ShannonBasic().calculate(string), self.ENTROPY))
-        results.append(Terminal(str_description, self.DESCRIPTION))
+        if str_description is not None:
+            results.append(Terminal(str_description, self.DESCRIPTION))
 
-        return Results(results, self.NAME)
+        return results
 
     def get_length(self):
-        return self.get(self.LENGTH)
+        return self.get(self.LENGTH).get_result()
 
-    def get_text(self):
-        return self.get(self.TEXT)
+    def get_text(self, limit=None):
+        if limit is None:
+            limit = self._limit
+        return self.get(self.TEXT).get_result()[0:limit]
 
     def get_entropy(self):
-        return self.get(self.ENTROPY)
+        return self.get(self.ENTROPY).get_result()
+
+    def __str__(self):
+        d = self.get_dict()
+        print d[self.NAME].keys()
+        # d[self.NAME][self.TEXT] = d[self.TEXT][0:self._limit]
+
+        return self._format_dict_repr(d)
 
 
 class CompressorDemo(ADemo):
-    NAME = "COMPRESSIOn"
+    NAME = "COMPRESSION"
     COMPRESSION = "COMPRESSION"
     SOURCE_LENGTH = "SOURCE STRING LENGTH"
     SOURCE_ENTROPY = "SOURCE STRING ENTROPY"
-    SIGNATURE_DESCRIPTION = "SIGNATURE DESCRIPTION"
+    SIGNATURE_DESCRIPTION = StringDemo.NAME  # temp
     TIME = "TIME"
     ACCURACY = "ACCURACY"
 
+    def __init__(self, compressor, string_demo, **labels):
+        super(type(self), self).__init__(compressor, string_demo)
+
     @classmethod
-    def CREATE_DESCRIPTION(self, compressor, string_demo):
+    def _CREATE_RESULTS(self, compressor, string_demo):
         diff = ScoreDistance.difference
         source_string = string_demo.get_text()
-        print "HELO: " + str(type(source_string))
-        print source_string
         signature = ComputationManager.CREATE_COMPUTATION(
             compressor.compress, source_string)
         sig_time = signature.time()
         sig_text = signature.value()
 
         results = list()
-        results.append(Terminal(self.SOURCE_LENGTH,
-                                string_demo.get_length()))
-        results.append(Terminal(self.SOURCE_ENTROPY,
-                                string_demo.get_entropy()))
-        results.append(StringDemo("Signature: " +
-                                  string_demo.get_name(),
-                                  sig_text,
-                                  description=self.SIGNATURE_DESCRIPTION))
-        results.append(Terminal(self.TIME, sig_time))
-        print sig_text
+        results.append(Terminal(string_demo.get_length(),
+                                self.SOURCE_LENGTH))
+        results.append(
+            Terminal(string_demo.get_entropy(), self.SOURCE_ENTROPY))
+        results.append(StringDemo(sig_text,
+                                  ("Signature for " + string_demo.NAME)
+                                  # name=self.SIGNATURE_DESCRIPTION
+                                  ).get_description())
+        results.append(Terminal(sig_time, self.TIME))
         signature_length = len(sig_text)
         expected_length = len(source_string) / float(compressor.getC())
-        results.append(Terminal(self.ACCURACY, diff(signature_length,
-                                                    expected_length)))
+        results.append(
+            Terminal(diff(signature_length, expected_length), self.ACCURACY))
 
-        return Results(self.NAME, results)
-
-    def get_compression(self):
-        return get(self.COMPRESSION)
+        return results
 
     def get_source_length(self):
-        return get(self.SOURCE_LENGTH)
+        return self.get(self.SOURCE_LENGTH).get_result()
 
     def get_source_entropy(self):
-        return get(self.SOURCE_ENTROPY)
+        return self.get(self.SOURCE_ENTROPY).get_result()
+
+    def get_compression(self):
+        return self.get(self.COMPRESSION)
 
     def get_sig_desc(self):
-        return get(self.SIGNATURE_DESCRIPTION)
+        return self.get(self.SIGNATURE_DESCRIPTION)
+
+    def get_entropy(self):
+        return self.get_sig_desc().get_entropy()
+
+    def get_length(self):
+        return self.get_sig_desc().get_length()
+
+    def get_text(self):
+        return self.get_sig_desc().get_text()
 
     def get_time(self):
-        return get(self.TIME)
+        return self.get(self.TIME).get_result()
 
     def get_accuracy(self):
-        return get(self.ACCURACY)
+        return self.get(self.ACCURACY).get_result()
 
 
 class FileDemo(ADemo):
-    CONTENTS = "CONTENT"
+    CONTENTS = StringDemo.NAME  # temp
     FILENAME = "FILENAME"
+    NAME = "NAME"
 
     @classmethod
-    def CREATE_DESCRIPTION(self, fname):
+    def _CREATE_RESULTS(self, fname):
         file_contents = self._parse_file(fname)
         description = file_contents[1]
+        text = file_contents[0]
 
         results = list()
-        results.append(StringDemo(self.CONTENTS, "Contents of file '" +
-                                  fname + "'", file_contents[0]))
+        results.append(Terminal(fname, self.FILENAME))
+        results.append(StringDemo(text, None,
+                                  # name=self.CONTENTS
+                                  ).get_description())
 
-        return Results(description, results)
+        return results
 
     @staticmethod
     def _parse_file(fname):
@@ -236,46 +281,52 @@ class FileDemo(ADemo):
         return self.get(self.CONTENTS)
 
     def get_filename(self):
-        return self.get(self.FILENAME)
+        return self.get(self.FILENAME).get_result()
 
-    def get_compression(self):
-        return self.get_contents().get_compression()
+    def get_length(self):
+        return self.get_contents().get_length()
 
-    def get_source_length(self):
-        return self.get_contents().get_source_length()
+    def get_entropy(self):
+        return self.get_contents().get_entropy()
 
-    def get_source_entropy(self):
-        return self.get_contents().get_source_entropy()
-
-    def get_sig_desc(self):
-        return self.get_contents().get_sig_desc()
-
-    def get_time(self):
-        return self.get_contents().get_time()
-
-    def get_accuracy(self):
-        return self.get_contents().get_accuracy()
+    def get_text(self):
+        return self.get_contents().get_text()
 
 
 class FileComparison(ADemo):
     DIFFERENCE = "DIFFERENCE"
+    NAME = "FILE COMPARISON"
 
-    def __init__(self, fname1, fname2, difference="NOT SPECIFIED"):
-        pass
+    def __init__(self, fname1, fname2, difference="NOT SPECIFIED", **labels):
+        super(type(self), self).__init__(fname1, fname2, difference)
 
     @classmethod
-    def CREATE_DESCRIPTION(self, fname1, fname2, difference):
-        files = list()
+    def _CREATE_RESULTS(self, fname1, fname2, difference):
+        results = list()
 
-        files.append(FileDemo(fname1))
-        files.append(FileDemo(fname2))
+        results.append(FileDemo(fname1).get_description())
+        results.append(FileDemo(fname2).get_description())
+        results.append(Terminal(difference, self.DIFFERENCE))
 
-        diff = Terminal(self.DIFFERENCE, difference)
-
-        return Results(files, diff)
+        return results
 
     def get_file_desc(self, fname):
-        return self._files[fname]
+        return self.get(fname)
+
+    def get_contents(self, fname):
+        return self.get_file_desc(fname).get_contents()
+
+    def get_filename(self, fname):
+        return self.get_file_desc(fname).get_filename()
+
+    def get_length(self, fname):
+        return self.get_file_desc(fname).get_length()
+
+    def get_entropy(self, fname):
+        return self.get_file_desc(fname).get_entropy()
+
+    def get_text(self, fname):
+        return self.get_file_desc(fname).get_text()
 
 
 class MeasurementDescription(ADemo):
@@ -285,39 +336,49 @@ class MeasurementDescription(ADemo):
     """
     VALUE = "VALUE"
     TIME = "TIME"
+    DESCRIPTION = "ALGORITHM"
+    NAME = "DISTANCE"
 
-    @classmethod
-    def CREATE(cls, description, sd, measure):
+    def _CREATE_RESULTS(self, sd, measure, **labels):
         results = list()
-
         c = sd.get(measure)
-        results.append(Terminal(cls.VALUE, c.value()))
-        results.append(Terminal(cls.TIME, c.time()))
 
-        return cls(description, results)
+        results.append(Terminal(c.value(), self.VALUE))
+        results.append(Terminal(c.time(), self.TIME))
+        results.append(Terminal(measure.__name__, self.DESCRIPTION))
+
+        return results
+
+    def get_value(self):
+        return self.get(self.VALUE).get_result()
+
+    def get_time(self):
+        return self.get(self.TIME).get_result()
 
 
 class EstimateDemo(MeasurementDescription):
     ERROR = "ERROR"
+    NAME = "SQUASH ESTIMATE"
 
-    @classmethod
-    def CREATE(cls, description, sd):
-        results = list()
+    def __init__(self, sd, **labels):
+        super(type(self), self).__init__(sd, LevenSquash.estimate)
 
-        c = sd.get(measure)
-        results.append(Terminal(cls.VALUE, c.value()))
-        results.append(Terminal(cls.TIME, c.time()))
-        results.append(Terminal(cls.ERROR, ScoreDistance.difference(
-            LevenSquash.estimate, LevenSquash.calculate)))
+    def _CREATE_RESULTS(self, sd, estimate):
+        results = super(type(self), self)._CREATE_RESULTS(sd, estimate)
 
-        return cls(description, results)
+        results.append(Terminal(sd.diff(
+            LevenSquash.estimate, LevenSquash.calculate).value(), self.ERROR))
+
+        return results
+
+    def get_error(self):
+        return self.get(self.ERROR).get_result()
 
 
 class DistanceDemo(MeasurementDescription):
 
-    @classmethod
-    def CREATE(cls, note, sd):
-        return super(type(self), self).CREATE(note, sd, LevenSquash.calculate)
+    def __init__(self, sd):
+        super(type(self), self).__init__(self, sd, LevenSquash.calculate)
 
 
 class SquashDemo(ADemo):
@@ -330,19 +391,20 @@ class SquashDemo(ADemo):
     LEVENSQUASH_MODULE = "LEVENSQUASH MODULE"
     ESTIMATE = "ESTIMATE"
     ESTIMATE_CORRECTED = "ESTIMATE_CORRECTED"
+    NAME = "SQUASHING"
 
-    def __init__(self, note, sd):
-        pass
+    def __init__(self, sd):
+        super(type(self), self).__init__(sd)
 
-    def CREATE(cls, note, sd):
+    def _CREATE_RESULTS(self, sd):
         results = list()
 
-        results.append(LevenSquashDemo.CREATE(
-            "ls module desc", sd.get_leven_squash()))
-        results.append(EstimateDemo.CREATE("a super cool estimate", sd))
-        results.append(Terminals(cls.ESTIMATE_CORRECTED, "N/A"))
+        results.append(LSDemo(
+            sd.get_leven_squash()).get_description())
+        results.append(EstimateDemo(sd).get_description())
+        # results.append(Terminals(self.ESTIMATE_CORRECTED, "N/A"))
 
-        return cls(note, results)
+        return results
 
 
 class LSDemo(ADemo):
@@ -351,20 +413,37 @@ class LSDemo(ADemo):
     dict composed of describe_compressor and describe_LD_algorithm with keys
     COMPRESSOR and 'LD ALGORITHM'.
     """
+    COMPRESSION = "COMPRESSION ALGORITHM"
+    DISTANCE = "DISTANCE ALGORITHM"
+    NAME = "LEVENSQUASH DESCRIPTION"
 
     @classmethod
-    def CREATE(cls, note, ls):
+    def _CREATE_RESULTS(self, ls):
         results = list()
-        results.append(ProcessDemo.CREATE(ls.get_compressor().get_algorithm()))
-        results.append(ProcessDemo.CREATE(ls.get_ld_alg().get_algorithm()))
-        return cls("LevenSquash description", results)
+
+        results.append(ProcessDemo(
+            ls.get_compressor().get_algorithm()).get_description())
+        results.append(ProcessDemo(
+            ls.get_ld_alg().get_algorithm()).get_description())
+
+        return results
 
 
 class ProcessDemo(ADemo):
+    PROCESS = "PROCESS"
+    NAME = "PROCESS DEMO"
 
-    def __init__(self, process):
-        self._type = process.__class__.__name__
+    def __init__(self, process, **labels):
+        super(type(self), self).__init__(process)
+
         # self._desc = process.__doc__.replace('\n', '')
+
+    def _CREATE_RESULTS(self, process):
+        results = list()
+
+        results.append(Terminal(process.__class__.__name__, self.PROCESS))
+
+        return results
 
 
 class DemoFiles(ADemo):
@@ -386,7 +465,7 @@ class DemoFiles(ADemo):
 
         self._score = ScoreDistance(text1, text2, ls)
         print("DEMO: CALCULATING ABSOLUTE LEVENSHTEIN DISTANCE...")
-        self._distance = Results("absolute distance: ", self._score)
+        self._distance = Description("absolute distance: ", self._score)
 
         print("DEMO: PRODUCING SQUASH DEMO...")
         self._squash_desc = SquashDescription("squash desc", self._score)
