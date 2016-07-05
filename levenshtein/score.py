@@ -66,6 +66,9 @@ class ScoreDistance():
         values denoting a < b and positive values a > b. That is, how much
         different is a from b.
         """
+        if a == b:
+            return 0
+
         return (a - b) / float(b)
 
     @staticmethod
