@@ -27,3 +27,5 @@ levenshtein/compression.pyc
 /levenshtein/_compression.so
 /levenshtein/_compressor.so
 /levenshtein/compressor.py
+/demo/test.py
+/demo/struct.txt

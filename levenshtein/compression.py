@@ -161,7 +161,5 @@ class Compressor (Calculation):
                                 'string to compress.')
             self.logger.warning(warning)
 
-        print "ALGORITH RETRIEVED: " + self.get_algorithm().__class__.__name__
-
         return self.get_algorithm().__call__(string, self._alphabet,
                                              self.C, self.N)
