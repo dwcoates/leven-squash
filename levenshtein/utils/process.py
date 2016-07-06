@@ -67,7 +67,6 @@ class Calculation (object):
         else:
             self.set_algorithm(
                 CachedProcess.MAKE_UNCACHED_PROCESS(self._process))
-            print "algorithm set: " + self._process.__class__.__name__
 
     def set_algorithm(self, alg):
         self._process = alg
