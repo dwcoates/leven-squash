@@ -26,17 +26,23 @@ class LevenSquash(object):
     # of signature LD and compression factor to adjust the expectation.
     sigRatio = 0.030
 
-    def __init__(self, compressor=Compressor(), dist_alg=LevenDistance()):
+    def __init__(self, compressor=None, dist_alg=None):
         # Default compression scheme. Note that this has a fairly large C,
         # so small strings will be completely annihilated, and therefore
         # this default compression scheme is completely useless for them.
-        self._compressor = compressor
+        if compressor is None:
+            self._compressor = Compressor()
+        else:
+            self._compressor = compressor
         logger.info("Configured leven-squash with %s compression scheme.",
                     self._compressor.__class__.__name__)
 
         # Default distance calculation alasgorithm is the standard algorithm
         # in n*m time and max(n,m) space complexity
-        self._dist_alg = dist_alg
+        if dist_alg is None:
+            self._dist_alg = LevenDistance()
+        else:
+            self._dist_alg = dist_alg
 
         logger.info("Configured leven-squash with %s LD algorithm.",
                     self._dist_alg.__class__.__name__)
@@ -135,14 +141,16 @@ class LevenSquash(object):
 
 class SmartLevenSquash:
 
-    def __init__(self, compressor=Compressor(), dist_alg=LevenDistance()):
+    def __init__(self, compressor=None, dist_alg=None):
         # this should do a deepcopy
-        comp = copy.copy(compressor)
-        comp.set_cache(True)
-        alg = copy.copy(dist_alg)
-        alg.set_cache(True)
+        if compressor is not None:
+            compressor = copy.copy(compressor)
+            compressor.set_cache(True)
+        if dist_alg is not None:
+            dist_alg = copy.copy(dist_alg)
+            dist_alg.set_cache(True)
 
-        self._ls = LevenSquash(comp, alg)
+        self._ls = LevenSquash(compressor, dist_alg)
 
     def setN(self, n):
         self._ls.get_compressor().setN(n)

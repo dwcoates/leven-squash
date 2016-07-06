@@ -11,18 +11,18 @@ from compressor import basic
 
 class Compression (Process):
 
-    def _execute(self, string, alphabet, C, N):
+    def _execute(self, string, alphabet_length, C, N):
         raise NotImplementedError("Compression is a template for " +
                                   "compression algorithms. Not implemented.")
 
-    def _core(self, string, alphabet, C, N):
+    def _core(self, string, alpha_len, C, N):
         sig = list()
         str_pos = 0
         str_len = len(string)
 
         while str_pos + N < str_len:
             h = self._hash_neighborhood(string, str_pos, N)
-            self._add_char(sig, alphabet, h, C)
+            self._add_char(sig, alpha_len, h, C)
             str_pos = str_pos + 1
 
         return ''.join(sig)
@@ -32,18 +32,17 @@ class Compression (Process):
                                   "' compressor module has not implemented " +
                                   "_hash_neighborhood.")
 
-    def _add_char(self, signature, alphabet, h, C):
+    def _add_char(self, signature, alpha_len, h, C):
         """
         Accept a list of characters 'signature' and append a random character
         from alphabet with 1/C liklihood. This is a function of '_hash'. That
         is, identical values of '_hash' must always add the same character.
         """
-        alpha_len = len(alphabet)
 
         if h % C == 0:
             indx = h % alpha_len
-            char = alphabet[indx]
-            signature.append(char)
+            c = unichr(indx)
+            signature.append(c)
 
 
 class BasicCompression (Compression):
@@ -52,8 +51,8 @@ class BasicCompression (Compression):
     """
     # log = Logger.getLogger(StringCompressorBasic)
 
-    def _execute(self, string, alphabet, C, N):
-        return self._core(string, alphabet, C, N)
+    def _execute(self, string, alpha_len, C, N):
+        return self._core(string, alpha_len, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
         acc = 0
@@ -68,8 +67,8 @@ class BasicCompression (Compression):
 
 class CRCCompression (Compression):
 
-    def _execute(self, string, alphabet, C, N):
-        return self._core(string, alphabet, C, N)
+    def _execute(self, string, alpha_len, C, N):
+        return self._core(string, alpha_len, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
         return binascii.crc32(string[str_pos:str_pos + N]) + 2**32
@@ -77,8 +76,8 @@ class CRCCompression (Compression):
 
 class MD5Compression (Compression):
 
-    def _execute(self, string, alphabet, C, N):
-        return self._core(string, alphabet, C, N)
+    def _execute(self, string, alpha_len, C, N):
+        return self._core(string, alpha_len, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
         return int(md5.new(string[str_pos:str_pos + N]).hexdigest(), 16)
@@ -86,20 +85,22 @@ class MD5Compression (Compression):
 
 class CBasicCompression (Compression):
 
-    def _execute(self, string, alphabet, C, N):
+    def _execute(self, string, alpha_len, C, N):
         # This will probably have to be Swig C call,
         # return compressor.core(string, my_C_hash_n, my_C_add_char)
-        return self._core(string, alphabet, C, N)
+        return self._core(string, alpha_len, C, N)
 
     def _hash_neighborhood(self, string, str_pos, N):
         return basic(string, str_pos, N)
 
 
 class Compressor (Calculation):
-    _alphabet = alphabet.ALPHABET_BASIC
 
-    def __init__(self, compression=BasicCompression(), C=150, N=8,
-                 alphabet=None, **kwargs):
+    def __init__(self, compression=None, C=150, N=8,
+                 alpha_len=100, **kwargs):
+        if compression is None:
+            compression = BasicCompression()
+
         super(type(self), self).__init__(compression, **kwargs)
 
         self.C = C
@@ -107,8 +108,11 @@ class Compressor (Calculation):
 
         self.logger = logging.getLogger(__name__)
 
-        if alphabet is not None:
-            self.set_alphabet(alphabet)
+        if alpha_len >= 0:
+            self._alphabet_length = alpha_len
+        else:
+            raise ValueError("Character alphabet for compression scheme " +
+                             "must be non-zero positive in length")
 
     def __copy__(self):
         c = type(self)()
@@ -133,18 +137,8 @@ class Compressor (Calculation):
     def set_algorithm(self, alg):
         self._compression = alg
 
-    def get_alphabet(self):
-        return self._alphabet
-
-    def set_alphabet(self, chars):
-        try:
-            if len(chars) >= 0:
-                self._alphabet = chars
-            else:
-                raise ValueError("Character alphabet for compression scheme " +
-                                 "must be non-zero in length")
-        except TypeError:
-            raise TypeError("'alphabet' provided is not a string.")
+    def get_alpha_len(self):
+        return self._alphabet_length
 
     def compress(self, string):
         """
@@ -161,5 +155,5 @@ class Compressor (Calculation):
                                 'string to compress.')
             self.logger.warning(warning)
 
-        return self.get_algorithm().__call__(string, self._alphabet,
+        return self.get_algorithm().__call__(string, self._alphabet_length,
                                              self.C, self.N)
