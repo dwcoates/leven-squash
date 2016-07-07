@@ -100,8 +100,10 @@ class Compressor (Calculation):
                  alpha_len=100, **kwargs):
         if compression is None:
             compression = BasicCompression()
-
-        super(type(self), self).__init__(compression, **kwargs)
+        elif isinstance(compression, Compression):
+            super(type(self), self).__init__(compression, **kwargs)
+        else:
+            raise TypeError("Compressor accepts instance of Compression.")
 
         self.C = C
         self.N = N
