@@ -11,6 +11,15 @@ from compressor import basic
 
 class Compression (Process):
 
+    def __call__(self, *args):
+        ret = self._execute(*args)
+
+        if ret is None:
+            raise Exception("Compression %s returned None" %
+                            (self.__class__.__name__))
+
+        return ret
+
     def _execute(self, string, alphabet_length, C, N):
         raise NotImplementedError("Compression is a template for " +
                                   "compression algorithms. Not implemented.")
@@ -41,7 +50,7 @@ class Compression (Process):
 
         if h % C == 0:
             indx = h % alpha_len
-            c = unichr(indx)
+            c = chr(indx)
             signature.append(c)
 
 
@@ -97,13 +106,12 @@ class CBasicCompression (Compression):
 class Compressor (Calculation):
 
     def __init__(self, compression=None, C=150, N=8,
-                 alpha_len=100, **kwargs):
+                 alpha_len=62, **kwargs):
         if compression is None:
             compression = BasicCompression()
-        elif isinstance(compression, Compression):
-            super(type(self), self).__init__(compression, **kwargs)
-        else:
+        elif not isinstance(compression, Compression):
             raise TypeError("Compressor accepts instance of Compression.")
+        super(type(self), self).__init__(compression, **kwargs)
 
         self.C = C
         self.N = N

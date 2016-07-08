@@ -113,6 +113,14 @@ class LevenSquash(object):
 
             raise TypeError(warning)
 
+        if dist is None:
+            warn = "%s.distance called on objects typed '%s' and '%s' has returned None" % (
+                self._dist_alg.__class__.__name__,
+                str1.__class__.__name__,
+                str2.__class__.__name__)
+            warn += ("\nSTRING LENGTHS: %s, %s" % (len(str1), len(str2)))
+            raise Exception(warn)
+
         return dist
 
     def _estimate(self, str1, str2):

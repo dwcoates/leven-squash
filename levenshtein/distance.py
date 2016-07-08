@@ -9,7 +9,10 @@ class LDAlgorithm (Process):
     # be equipped with some error factor.
 
     def _execute(self, str1, str2):
-        raise NotImplemented
+        if type(str1) is not str or type(str2) is not str:
+            warn = ("LDAlgorithm '%s' received non-strings to process" % (
+                self.__class__.__name__))
+            raise TypeError(warn)
 
 
 class Absolute (LDAlgorithm):
@@ -17,6 +20,7 @@ class Absolute (LDAlgorithm):
     Levenshtein.StringMatcher.distance LD algorithm."""
 
     def _execute(self, str1, str2):
+        LDAlgorithm._execute(self, str1, str2)
         return levenshtein_distance(str1, str2)
 
 
