@@ -100,13 +100,13 @@ def dir_results(directory=data_dir):
     return zip(*[file_results(f1, f2) for (f1, f2) in sources])
 
 
-def test(test_name, directory=data_dir):
+def test_and_save(test_name, directory=data_dir):
     res = dir_results(directory)
 
-    cPickle.dump(res, open(join(data_dir, test_name) + '.p', 'wb'))
+    cPickle.dump(res, open(join(directory, test_name) + '.p', 'wb'))
 
     return res
 
 
-def load_test_results(test_name):
-    return cPickle.load(open(join(data_dir, test_name) + '.p', 'rb'))
+def load_test_results(test_name, directory=data_dir):
+    return cPickle.load(open(join(directory, test_name) + '.p', 'rb'))
