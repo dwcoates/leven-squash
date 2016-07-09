@@ -71,6 +71,9 @@ class LevenSquash(object):
     def set_ld_alg(self, dist_alg):
         self._dist_alg = dist_alg
 
+    def _compress(self, string):
+        return self.get_compressor().compress(string)
+
     def estimate(self, str1, str2):
         """
         Accepts two strings, and returns the approximation of their distance.
@@ -126,8 +129,8 @@ class LevenSquash(object):
     def _estimate(self, str1, str2):
         logger.info("Squashing distance between two strings...")
 
-        sig1 = self._compressor.compress(str1)
-        sig2 = self._compressor.compress(str2)
+        sig1 = self._compress(str1)
+        sig2 = self._compress(str2)
 
         logger.info('Computing signature distance...')
 
@@ -161,16 +164,16 @@ class SmartLevenSquash:
         self._ls = LevenSquash(compressor, dist_alg)
 
     def setN(self, n):
-        self._ls.get_compressor().setN(n)
+        self._ls.setN(n)
 
     def getN(self):
-        return self._ls.get_compressor().getN()
+        return self._ls.getN()
 
     def setC(self, c):
-        self._ls.get_compressor().setC(c)
+        self._ls.setC(c)
 
     def getC(self):
-        return self._ls.get_compressor().getC()
+        return self._ls.getC()
 
     def get_compressor(self):
         return self._ls.get_compressor()
@@ -183,6 +186,10 @@ class SmartLevenSquash:
 
     def set_ld_alg(self, dist_alg):
         self._ls.set_ld_alg(dist_alg)
+
+    def compress(self, string):
+        return ComputationManager.CREATE_COMPUTATION(self._ls._compress,
+                                                     string)
 
     def estimate(self, str1, str2):
         return ComputationManager.CREATE_COMPUTATION(self._ls.estimate,
