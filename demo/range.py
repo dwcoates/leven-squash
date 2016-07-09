@@ -3,12 +3,14 @@ import pprint
 import math
 from os import listdir
 from os.path import isfile, join
+import time
 
 from levenshtein.leven_squash import *
 from itertools import product, combinations
 from levenshtein.compression import Compressor, CRCCompression
 from levenshtein.score import ScoreDistance
 import levenshtein.distance
+from levenshtein.utils.misc import nCr
 
 
 def read(fname):
@@ -17,7 +19,7 @@ def read(fname):
 
     return data
 
-data_dir = "./data/test"
+data_dir = "./data/"
 exclude_files = ["__init__.py"
                  ]
 
@@ -27,10 +29,10 @@ pp = pprint.PrettyPrinter(indent=4)
 
 C1 = 100
 C2 = 200
-N1 = 5
-N2 = 75
+N1 = 1
+N2 = 40
 STEP_C = 10
-STEP_N = 5
+STEP_N = 1
 
 
 def estimate(str1, str2, c, n):
@@ -44,6 +46,11 @@ def estimate(str1, str2, c, n):
 
 
 def results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n, true_dist=None):
+    """
+    Produce a list of estimates for a range of C and N values in the
+    compressor. Uses step_c and step_n to define how many C/N values to skip
+    per iteration.
+    """
     if not (n2 > n1 > 0) or not (c2 > c1 > 0):
         raise ValueError("n1,n2 and c1,c2 must be positive with x1<x2" +
                          "n1=%s,n2=%s : c1=%s,c2=%s" % (n1, n2, c1, c1))
@@ -73,6 +80,10 @@ def results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n, true_dist=N
 
 
 def file_results(f1, f2):
+    """
+    Produce a list of estimates using a range of C and N values in the
+    compressor.
+    """
     str1 = read(f1)
     str2 = read(f2)
 
@@ -84,17 +95,17 @@ def file_results(f1, f2):
 
 
 def dir_results(directory=data_dir):
-    dir_files = [join(data_dir, f)
-                 for f in listdir(data_dir) if isfile(join(data_dir, f))]
+    """
+    Produce a set of range results for files in 'directory'.
+    """
+    dir_files = [join(directory, f)
+                 for f in listdir(directory) if isfile(join(directory, f))]
     dir_files = [f for f in dir_files if f not in exclude_files]
 
-    file_pairs = [(a, b) for (a, b) in product(dir_files, dir_files) if a != b]
-    sources = []
-    for (a, b) in file_pairs:
-        if (b, a) not in sources:
-            sources.append((a, b))
+    sources = list(combinations(dir_files, 2))
 
-    print("Getting range results for appropriate files in '" + data_dir + "'")
+    print("Getting range results for appropriate files in '" + directory + "'")
+    print("%s usable files in '%s'" % (len(dir_files), directory))
     print("%s such file pairs for which to produce range results.\n\n" %
           (len(sources)))
 
@@ -102,9 +113,15 @@ def dir_results(directory=data_dir):
 
 
 def test_and_save(test_name, directory=data_dir):
+    """
+    Produces a set of results for files in 'directory' and saves them using
+    to pickle file with name 'test_name' in directory.
+    """
+    start = time.clock()
     res = dir_results(directory)
 
     cPickle.dump(res, open(join(directory, test_name) + '.p', 'wb'))
+    print("Done.\nTime to compute: ~%ss") % (int(time.clock() - start))
 
     return res
 
@@ -113,10 +130,56 @@ def load_test_results(test_name, directory=data_dir):
     return cPickle.load(open(join(directory, test_name) + '.p', 'rb'))
 
 
+def stat(results):
+    """
+    Maps process over a list of range results.
+    """
+    return [process(results[i], i + 1) for i in xrange(len(results))]
+
+
+def process(result_set, count):
+    """
+    Given an element of a range results from a test, produce a set of
+    statistics on it. A set of results is any list of (error, C, N)
+    tuples (produced by results_over_c_and_n).
+    """
+    stats = zip(*result_set)[0]
+    return (count, dict([("MEAN", rate(mean, stats)),
+                         ("MEDIAN", rate(medn, stats)),
+                         ("RANGE", rate(rng, stats)),
+                         ("MAX", rate(max, stats)),
+                         ("MIN", rate(min, stats))]))
+
+
+def rate(f, result_set):
+    """
+    Apply 'f' to each of the three result types in the result set (error, C, N)
+    """
+    results = zip(*result_set)
+
+    return (dict([("ERROR", apply(f, results[0])),
+                  ("C", apply(f, results[1])),
+                  ("N", apply(f, results[2]))]))
+
+
+def mean(*args):
+    return sum(args) / len(args)
+
+
+def medn(*args):
+    r = sorted(args)
+    if len(r) % 2 == 0:
+        return m(r[len(r) / 2 - 1], r[len(r) / 2])
+    else:
+        return r[len(r) / 2]
+
+
+def rng(*args):
+    return max(args) - min(args)
+
+
 def sanity_check(test_results):
-    """
-    Test to ensure that results list is organized as expected.
-    """
+    # Mock test to ensure that results list is organized as expected.
     checks = 0
     length_test = len(test_results[0])
     for x in xrange(len(test_results)):
