@@ -2,16 +2,17 @@ from itertools import combinations, islice
 from os import listdir
 from os.path import isfile, join
 import pprint
-import math
-
-pp = pprint
 
 from levenshtein.utils.stringer import random_string as r
 from levenshtein.distance import Absolute
+from levenshtein.utils.misc import nCr
 
 
 data_dir = "./data/"
+
 distance = Absolute()
+
+pp = pprint
 
 
 def read(fname):
@@ -19,11 +20,6 @@ def read(fname):
         data = f.read().replace('\n', '')
 
     return data
-
-
-def nCr(n, r):
-    f = math.factorial
-    return f(n) / f(r) / f(n - r)
 
 
 def average(samples):
