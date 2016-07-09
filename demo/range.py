@@ -19,7 +19,7 @@ def read(fname):
 
     return data
 
-data_dir = "./data/"
+data_dir = "./data/test"
 exclude_files = ["__init__.py"
                  ]
 
@@ -109,7 +109,20 @@ def dir_results(directory=data_dir):
     print("%s such file pairs for which to produce range results.\n\n" %
           (len(sources)))
 
-    return zip(*[file_results(f1, f2) for (f1, f2) in sources])
+    res = []
+    count = 0
+    t = 0
+    for f1, f2 in sources:
+        count = count + 1
+        start = time.clock()
+        res.append(file_results(f1, f2))
+        end = time.clock() - start
+        t += end
+        print("%s/%s sources processed. Result time: %s\nTotal time: %s\n\n" %
+              (count, len(sources), end, t))
+
+    return zip(*res)
+    # return zip(*[file_results(f1, f2) for (f1, f2) in sources])
 
 
 def test_and_save(test_name, directory=data_dir):
