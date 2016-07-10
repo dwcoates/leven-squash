@@ -8,7 +8,7 @@ class TrueDistanceCache:
         if data_dir == None:
             data_dir = os.path.join(os.path.dirname(__file__), "data")
         if filename == None:
-            filename = os.path.join(data_dir, "results", "cache.json")
+            filename = os.path.join(data_dir, "cache", "cache.json")
         
         self.filename = filename
         self.data_dir = data_dir
