@@ -4,9 +4,10 @@ import math
 from os import listdir
 from os.path import isfile, join
 import time
+from itertools import product, combinations
+
 
 from levenshtein.leven_squash import *
-from itertools import product, combinations
 from levenshtein.compression import Compressor, CRCCompression
 from levenshtein.score import ScoreDistance
 import levenshtein.distance
@@ -36,7 +37,7 @@ STEP_N = 1
 
 
 def estimate(str1, str2, c, n):
-    if str1 is None or str2 is None:
+    if snntr1 is None or str2 is None:
         raise TypeError("Strings to be estimated must be str")
 
     def LS(_c, _n): return LevenSquash(
@@ -79,7 +80,7 @@ def results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n, true_dist=N
     return sorted(results)
 
 
-def file_results(f1, f2):
+def file_results(f1, f2, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, step_n=STEP_N):
     """
     Produce a list of estimates using a range of C and N values in the
     compressor.
@@ -88,13 +89,12 @@ def file_results(f1, f2):
     str2 = read(f2)
 
     print("Producing range results for '%s' and '%s'..." % (f1, f2))
-    results = results_over_c_and_n(
-        str1, str2, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, step_n=STEP_N)
+    results = results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n)
 
     return zip(results, [("%s__AND__%s" % (f1, f2)) for i in range(len(results))])
 
 
-def dir_results(directory=data_dir):
+def dir_results(directory=data_dir, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, step_n=STEP_N):
     """
     Produce a set of range results for files in 'directory'.
     """
@@ -115,7 +115,7 @@ def dir_results(directory=data_dir):
     for f1, f2 in sources:
         count = count + 1
         start = time.clock()
-        res.append(file_results(f1, f2))
+        res.append(file_results(f1, f2, c1, c2, n1, n2, step_c, step_n))
         end = time.clock() - start
         t += end
         print("%s/%s sources processed. Result time: %s\nTotal time: %s\n\n" %
