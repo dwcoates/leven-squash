@@ -6,7 +6,9 @@ import pkg_resources
 
 from logging.config import dictConfig
 
-DEFAULT_LOG_PATH = pkg_resources.resource_filename('levenshtein.utils', 'log.json')
+DEFAULT_LOG_PATH = pkg_resources.resource_filename(
+    'levenshtein.utils', 'log.json')
+
 
 def setup_logging(
     default_path=DEFAULT_LOG_PATH,
@@ -37,13 +39,13 @@ def setup_logging(
         raise ValueError(warn_msg + traceback.format_exc())
 
 
-
 class Singleton(type):
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances.keys():
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(
+                Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 

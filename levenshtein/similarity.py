@@ -75,7 +75,8 @@ def average_over_n(str1, str2, n1, n2, step=10, c=150):
 
 def max_over_n(str1, str2, n1, n2, step=10, c=150):
     if n2 > n1 > 0:
-        return max([(_cosine(str1, str2, c, n), i * step + n1) for i, n in enumerate(xrange(n1, n2, step))])
+        return max([(_cosine(str1, str2, c, n), i * step + n1)
+                    for i, n in enumerate(xrange(n1, n2, step))])
     else:
         raise ValueError("n1 and n2 must be positive with n2 greater than n1")
 

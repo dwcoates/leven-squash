@@ -3,7 +3,6 @@ import logging
 from levenshtein.distance import *
 from levenshtein.compression import *
 from levenshtein.utils.computation import ComputationManager
-from levenshtein.utils.filer import normalize_from_file
 from copy import deepcopy
 
 if __name__ == '__main__':
@@ -14,17 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 class LevenSquash(object):
-    # Amount by which the LD of a pair of equal length random text strings is
-    # smaller than their length. This is used to fudge the product of
-    # signature LD and compression factor to adjust the expectation.
-    # Note, this is a function of the alphabet length of the compression
-    # scheme.
-    wholeFileRatio = 0.022
+    # The average Levenshtein normalized distance between two pieces of
+    # English text of considerable size.
+    avg_english_dist = 0.78415552
 
-    # Amount by which the LD of a pair of equal size plain-generated
-    # signatures is smaller than their length. This is used to fudge product
-    # of signature LD and compression factor to adjust the expectation.
-    sigRatio = 0.030
+    # The average Levenshtein normalized distance between two ransom strings
+    # of considerable size.
+    avg_random_dist = 0.94574417
+
+    # We expect random strings, i.e., signatures, to have considerably more
+    # random composition than English text, of course. Therefore, their
+    # distance will be on average greater. This correction factor can be
+    # used to greatly improve estimates.
+    correction_factor = avg_english_dist / avg_random_dist
 
     def __init__(self, compressor=None, dist_alg=None):
         # Default compression scheme. Note that this has a fairly large C,
@@ -88,14 +89,14 @@ class LevenSquash(object):
         """
         Accepts two strings, and returns the approximation of their distance.
         This is derived from LevenSquash.estimate() by multiplying the result
-        by a correction factor.
+        by a correction factor. The derivation of this correction factor is
+        shown in demo.
         """
         logger.info("Computing corrected squash estimate...")
 
         est = self._estimate(str1, str2)
 
-        # TODO: correct est by correction factor
-        est_corrected = 0 * est
+        est_corrected = self.correction_factor * est
 
         logger.info("Corrected distance: " + str(est_corrected))
 

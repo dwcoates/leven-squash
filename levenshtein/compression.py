@@ -10,6 +10,9 @@ from compressor import basic
 
 
 class Compression (Process):
+    """
+    Base class for all compression processes
+    """
 
     def __call__(self, *args):
         ret = self._execute(*args)
@@ -108,7 +111,7 @@ class Compressor (Calculation):
     def __init__(self, compression=None, C=150, N=8,
                  alpha_len=62, **kwargs):
         if compression is None:
-            compression = BasicCompression()
+            compression = CRCCompression()
         elif not isinstance(compression, Compression):
             raise TypeError("Compressor accepts instance of Compression.")
         super(type(self), self).__init__(compression, **kwargs)

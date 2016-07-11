@@ -18,9 +18,6 @@ class ScoreDistance():
 
         self._sls = SmartLevenSquash(ls.get_compressor(), ls.get_ld_alg())
 
-    def get_strings(self):
-        return (self._str1, self._str2)
-
     def set_leven_squash(self, ls):
         self._sls = SmartLevenSquash(ls.get_compressor(), ls.get_ld_alg())
 
@@ -28,7 +25,6 @@ class ScoreDistance():
         """
         Returns a deep copy of the LevenSquash module being scored.
         """
-        # CURRENTLY RETURNS REFERENCE. WARNING.
         return self._sls
 
     def getC(self):
@@ -135,31 +131,3 @@ class ScoreDistance():
 
         return ScoreDistance.difference(abs(err_corrected),
                                         abs(err_estimate))
-
-    # Adjust an estimate for the difference between the LD of randomly chosen
-    # English text and the LD of the corresponding signatures differs.
-    # Signatures have higher entropy, hence a relatively greater LD.
-    # sigRatio is the average ratio of the LD of signatures to the
-    # corresponding string lengths to the ratio of the LD of the original
-    # strings to the string length  (for same-length originals).
-    def fudgeFactor(self, in_):
-        correctionFactor = self.sigRatio - self.wholeFileRatio
-        v = in_ + (in_ * correctionFactor)
-        return v
-
-    # The expected distance of two random strings of lengths s1 and s2, give
-    # the expected contraction of LD (fudge factor);
-    def expectedDistance(self, s1, s2):
-        return self.fudgeFactor(max(s1, s2)) + abs(s1 - s2)
-
-    # Given two signatures and the length of the length of the longer original
-    # string, compute the raw estimate as LD(sig1,sig2)/longerSigLen
-    # longerOriginalStringLen. Adjust this string by the fudge factor that
-    # considers the ratio of LD to string lengths for originals and signatures
-    # (they differ).
-    def getLDEst(self, sig1, sig2, longerUnCompressed, shorterUncompressed):
-        longer = max(sig1.length(), sig2.length())
-        ld = self._sls.calculate(sig1, sig2)
-        computedLenRatioPlain = ld / float(longer)
-        estimatedUnadjusted = computedLenRatioPlain
-        return self.fudgeFactor(estimatedUnadjusted)

@@ -10,6 +10,7 @@ import numpy as np
 # events, this metric is not best approximated by the basic Shannon entropy,
 # and instead is done by some stochastic process.
 class Entropy:
+
     def calculate(self, string):
         probs = Entropy.char_distribution(string).values()
 
@@ -39,6 +40,7 @@ class Entropy:
 
 
 class ShannonBasic(Entropy):
+
     def get_entropy(self, probs):
         """
         Estimate the entropy of string in Shannons. That is, this method
@@ -49,6 +51,6 @@ class ShannonBasic(Entropy):
         ent_nat = entropy(probs)
 
         # convert to Shannons
-        ent_shan = ent_nat * 1/np.log(2)
+        ent_shan = ent_nat * 1 / np.log(2)
 
         return ent_shan
