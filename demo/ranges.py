@@ -5,7 +5,6 @@ from os import listdir
 from os.path import isfile, join
 import time
 from itertools import product, combinations
-import cache
 
 
 from levenshtein.leven_squash import *
@@ -13,6 +12,7 @@ from levenshtein.compression import Compressor, CRCCompression
 from levenshtein.score import ScoreDistance
 import levenshtein.distance
 from levenshtein.utils.misc import nCr
+import cache
 
 
 def read(fname):

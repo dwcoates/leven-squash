@@ -7,13 +7,13 @@ import json
 from ranges import read, absolute_distance, exclude_files
 from levenshtein.score import ScoreDistance
 from levenshtein.compression import Compressor
+from levenshtein.distance import Absolute
 
 
-n = 4
+n = 10
 c = 140
-correction_factor = 0.8558
+correction_factor = .784 / 0.953
 diff = ScoreDistance.difference
-
 
 huck = read("../demo/data/adventures_of_huckleberry_finn.txt")
 sawyer = read("../demo/data/adventures_of_tom_sawyer.txt")
@@ -21,28 +21,23 @@ sibbald = read("../demo/data/dantes_inferno_english_sibbald.txt")
 longfellow = read("../demo/data/dantes_inferno_english_longfellow.txt")
 italian = read("../demo/data/dantes_inferno_italian.txt")
 
-dist_huck_sawyer = 124865
-dist_sibbald_longfellow = 102076
-dist_longfellow_italian = 106560
-dist_huck_longfellow = 122229
-
 
 def file_results(f1, f2):
     comp = Compressor(C=c, N=n)
 
     name = "%s__AND__%s" % (f1, f2)
 
+    print("Calculating distance of %s..." % name)
+    true_dist = absolute_distance(f1.split('/')[1], f2.split('/')[1])
+
     str1 = read(f1)
     str2 = read(f2)
-
-    print("Calculating distance of %s..." % name)
-    true_dist = absolute_distance(str1, str2)
 
     print("Estimating...")
     sig1 = comp.compress(str1)
     sig2 = comp.compress(str2)
 
-    estimate = absolute_distance(sig1, sig2) * c
+    estimate = Absolute()(sig1, sig2) * c
 
     corrected_estimate = estimate * correction_factor
 
@@ -54,6 +49,8 @@ def file_results(f1, f2):
 
 
 def dir_results(directory):
+    print("N=%s" % n)
+    print("Correction factor: %s" % correction_factor)
     dir_files = [join(directory, f)
                  for f in listdir(directory) if isfile(join(directory, f))]
     dir_files = [f for f in dir_files if f not in exclude_files]
