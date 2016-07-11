@@ -16,6 +16,7 @@ class Analyzer:
         self.distances = {}
         self.errors = defaultdict(dict)
         self.abs_errors = defaultdict(dict)
+        self.corrected = defaultdict(dict)
 
         with open(os.path.join(results_dir, files[0])) as sample:
             self.keys = json.load(sample).keys()
@@ -25,6 +26,7 @@ class Analyzer:
                 self.estimates[key][N] = {}
                 self.errors[key][N] = {}
                 self.abs_errors[key][N] = {}
+                self.corrected[key][N] = {}
             self.distances[key] = cache.cache[key]
        
         for file in files:
@@ -39,8 +41,9 @@ class Analyzer:
                             / float(self.distances[key])
                     self.errors[key][N][C] = error
                     self.abs_errors[key][N][C] = abs(error)
+                    self.corrected[key][N][C] = abs((data[key]*0.8291 - self.distances[key]) / float(self.distances[key]))
 
-    def stats(self, N=None, C=None):
+    def stats(self, N=None, C=None, corrected=False):
         if N == None:
             N = range(1,41)
         try:
@@ -58,10 +61,21 @@ class Analyzer:
         for key in self.keys:
             for n in N:
                 for c in C:
-                    errors.append(self.abs_errors[key][n][c])
+                    if corrected:
+                        errors.append(self.corrected[key][n][c])
+                    else:
+                        errors.append(self.abs_errors[key][n][c])
 
         return {"min":min(errors), "max":max(errors),
                 "average":np.mean(errors), "stddev":np.std(errors)}
 
+    def n_list(self, corrected=False):
+        Ns = []
+        for N in range(1, 41):
+            Ns.append((N, self.stats(N=N, corrected=corrected)["average"]))
+        return sorted(Ns, key=lambda x: x[1])
+
 analyzer = Analyzer()
 print analyzer.stats()
+for line in analyzer.n_list():
+    print line
