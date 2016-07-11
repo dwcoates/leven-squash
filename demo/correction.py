@@ -7,19 +7,13 @@ import json
 from ranges import read, absolute_distance, exclude_files
 from levenshtein.score import ScoreDistance
 from levenshtein.compression import Compressor
-from levenshtein.distance import Absolute
+from utils import *
 
 
 n = 10
 c = 140
 correction_factor = .784 / 0.953
 diff = ScoreDistance.difference
-
-huck = read("../demo/data/adventures_of_huckleberry_finn.txt")
-sawyer = read("../demo/data/adventures_of_tom_sawyer.txt")
-sibbald = read("../demo/data/dantes_inferno_english_sibbald.txt")
-longfellow = read("../demo/data/dantes_inferno_english_longfellow.txt")
-italian = read("../demo/data/dantes_inferno_italian.txt")
 
 
 def file_results(f1, f2):
@@ -28,7 +22,7 @@ def file_results(f1, f2):
     name = "%s__AND__%s" % (f1, f2)
 
     print("Calculating distance of %s..." % name)
-    true_dist = absolute_distance(f1.split('/')[1], f2.split('/')[1])
+    true_dist = file_distance(f1.split('/')[1], f2.split('/')[1])
 
     str1 = read(f1)
     str2 = read(f2)

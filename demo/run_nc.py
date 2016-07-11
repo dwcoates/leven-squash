@@ -7,8 +7,10 @@ import argparse
 import itertools
 import json
 
+
 def serialize(filename1, filename2):
     return "__AND__".join(sorted((filename1, filename2)))
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -20,7 +22,7 @@ def main():
     C = args.C
 
     data_dir = os.path.join(os.path.dirname(__file__), "data")
-    results_dir = os.path.join(data_dir,"results")
+    results_dir = os.path.join(data_dir, "results")
 
     ls = LevenSquash(compressor=Compressor(CRCCompression(), N=N, C=C))
 
@@ -40,4 +42,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
