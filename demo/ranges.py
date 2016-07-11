@@ -1,5 +1,4 @@
 import cPickle
-import pprint
 import math
 from os import listdir
 from os.path import isfile, join
@@ -10,24 +9,9 @@ from itertools import product, combinations
 from levenshtein.leven_squash import *
 from levenshtein.compression import Compressor, CRCCompression
 from levenshtein.score import ScoreDistance
-import levenshtein.distance
 from levenshtein.utils.misc import nCr
-import cache
+from utils import *
 
-
-def read(fname):
-    with open(fname) as f:
-        data = f.read().replace('\n', '')
-
-    return data
-
-data_dir = "./data/test"
-exclude_files = ["__init__.py"
-                 ]
-
-absolute_distance = cache.get
-
-pp = pprint.PrettyPrinter(indent=4)
 
 C1 = 100
 C2 = 200
@@ -38,16 +22,16 @@ STEP_N = 1
 
 
 def estimate(str1, str2, c, n):
-    if snntr1 is None or str2 is None:
+    if str1 is None or str2 is None:
         raise TypeError("Strings to be estimated must be str")
 
-    def LS(_c, _n): return LevenSquash(
-        Compressor(CRCCompression(), C=_c, N=_n))
+    def LS(_c, _n):
+        return LevenSquash(Compressor(C=_c, N=_n))
 
     return LS(c, n).estimate(str1, str2)
 
 
-def results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n, true_dist=None):
+def results_over_c_and_n(str1, str2, true_dist, c1, c2, n1, n2, step_c, step_n):
     """
     Produce a list of estimates for a range of C and N values in the
     compressor. Uses step_c and step_n to define how many C/N values to skip
@@ -57,24 +41,18 @@ def results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n, true_dist=N
         raise ValueError("n1,n2 and c1,c2 must be positive with x1<x2" +
                          "n1=%s,n2=%s : c1=%s,c2=%s" % (n1, n2, c1, c1))
 
-    error = ScoreDistance.error
-    c_and_n = product(xrange(c1, c2, step_c), xrange(n1, n2, step_n))
+    error = ScoreDistance.difference
 
     def err(s1, s2, _c_, _n_, distance):
-        # print("Calling estimate on c=%s, n=%s" % (c, n))
-        return error(distance, estimate(s1, s2, _c_, _n_))
+        return error(estimate(s1, s2, _c_, _n_), distance)
 
-    if true_dist is None:
-        print("Calculating true distance...")
-        print("Input length: %s, %s" % (len(str1), len(str2)))
-        true_dist = absolute_distance(str1, str2)
-        print("Done. Distance: " + str(true_dist))
-    else:
-        print("True distance: " + str(true_dist))
+    c_and_n = product(xrange(c1, c2, step_c), xrange(n1, n2, step_n))
 
     print ("Estimating over ranges C=%s,%s and N=%s,%s (distance=%s)" %
            (c1, c2, n1, n2, true_dist))
+
     results = [(err(str1, str2, c, n, true_dist), c, n) for c, n in c_and_n]
+
     print("Number of results: %s (expected=%s)\n" %
           (len(results), ((c2 - c1) / step_c) * ((n2 - n1) / step_n)))
 
@@ -86,11 +64,17 @@ def file_results(f1, f2, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, step_n=STEP_
     Produce a list of estimates using a range of C and N values in the
     compressor.
     """
+    print("Getting true distance...")
+    print f1, f2
+    true_dist = file_distance(f1.split('/')[2], f2.split('/')[2])
+    print("Done. Distance: " + str(true_dist))
+
     str1 = read(f1)
     str2 = read(f2)
 
     print("Producing range results for '%s' and '%s'..." % (f1, f2))
-    results = results_over_c_and_n(str1, str2, c1, c2, n1, n2, step_c, step_n)
+    results = results_over_c_and_n(
+        str1, str2, true_dist, c1, c2, n1, n2, step_c, step_n)
 
     return zip(results, [("%s__AND__%s" % (f1, f2)) for i in range(len(results))])
 
@@ -114,7 +98,7 @@ def dir_results(directory=data_dir, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, s
     count = 0
     t = 0
     for f1, f2 in sources:
-        count = count + 1
+        count += 1
         start = time.clock()
         res.append(file_results(f1, f2, c1, c2, n1, n2, step_c, step_n))
         end = time.clock() - start
@@ -123,10 +107,9 @@ def dir_results(directory=data_dir, c1=C1, c2=C2, n1=N1, n2=N2, step_c=STEP_C, s
               (count, len(sources), end, t))
 
     return zip(*res)
-    # return zip(*[file_results(f1, f2) for (f1, f2) in sources])
 
 
-def test_and_save(test_name, directory=data_dir):
+def test_and_save(test_name, directory=data_dir, results_dir=results_dir):
     """
     Produces a set of results for files in 'directory' and saves them using
     to pickle file with name 'test_name' in directory.
@@ -134,14 +117,14 @@ def test_and_save(test_name, directory=data_dir):
     start = time.clock()
     res = dir_results(directory)
 
-    cPickle.dump(res, open(join(directory, test_name) + '.p', 'wb'))
+    json.dump(res, open(join(results_dir, test_name) + '.json', 'wb'))
     print("Done.\nTime to compute: ~%ss") % (int(time.clock() - start))
 
     return res
 
 
-def load_test_results(test_name, directory=data_dir):
-    return cPickle.load(open(join(directory, test_name) + '.p', 'rb'))
+def load_test_results(test_name, directory=results_dir):
+    return json.load(open(join(directory, test_name) + '.json', 'rb'))
 
 
 def stat(results):
