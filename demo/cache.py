@@ -3,13 +3,15 @@ import os
 import json
 import levenshtein.distance
 
+
 class TrueDistanceCache:
+
     def __init__(self, filename=None, data_dir=None):
-        if data_dir == None:
-            data_dir = os.path.join(os.path.dirname(__file__), "data")
-        if filename == None:
+        if data_dir is None:
+            data_dir = os.path.join(os.path.dirname(__file__), "data/")
+        if filename is None:
             filename = os.path.join(data_dir, "cache", "cache.json")
-        
+
         self.filename = filename
         self.data_dir = data_dir
 
@@ -27,7 +29,7 @@ class TrueDistanceCache:
     def distance(self, filename1, filename2):
         filename1 = os.path.join(self.data_dir, filename1)
         filename2 = os.path.join(self.data_dir, filename2)
-        
+
         with open(filename1) as file1, open(filename2) as file2:
             return self.levenshtein(file1.read(), file2.read())
 
@@ -42,9 +44,9 @@ class TrueDistanceCache:
         return self.get(*files)
 
     def save(self, filename=None):
-        if filename == None:
+        if filename is None:
             filename = self.filename
-        
+
         with open(filename, 'w') as cache_file:
             json.dump(self.cache, cache_file)
 
@@ -61,4 +63,3 @@ if __name__ == "__main__":
     print cache.get(filename1, filename2)
 else:
     sys.modules[__name__] = cache
-
