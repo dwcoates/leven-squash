@@ -64,4 +64,4 @@ class Analyzer:
                 "average":np.mean(errors), "stddev":np.std(errors)}
 
 analyzer = Analyzer()
-print analyzer.stat()
+print analyzer.stats()
