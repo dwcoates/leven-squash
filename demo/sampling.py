@@ -1,21 +1,12 @@
 from itertools import combinations, islice
 from os import listdir
 from os.path import isfile, join
-import pprint
 import time
 import cPickle
 
 from levenshtein.utils.stringer import random_string as r
-from levenshtein.distance import Absolute
 from levenshtein.utils.misc import nCr
 from levenshtein.compression import Compressor, CRCCompression
-
-
-data_dir = "./data/"
-
-distance = Absolute()
-
-pp = pprint
 
 
 def read(fname):
@@ -23,24 +14,6 @@ def read(fname):
         data = f.read().replace('\n', '')
 
     return data
-
-
-def average(samples):
-    return sum([distance(str1, str2) for str1, str2 in samples]) / len(samples)
-
-
-def average_random(length, num):
-    s = 0
-    count = 0
-    start = time.clock()
-    for i in xrange(num):
-        count += 1
-        print("Progress: %s/%s" % (count, num))
-        s += distance(r(length), r(length))
-
-    print("Time to compute: %s" % (time.clock() - start))
-
-    return s / float(num)
 
 
 def read_files(directory, length, num):
@@ -69,6 +42,10 @@ def read_files(directory, length, num):
     return list(islice(combinations(chunks, 2), 0, num))
 
 
+def average(samples):
+    return sum([distance(str1, str2) for str1, str2 in samples]) / len(samples)
+
+
 def average_file(directory, length, num):
     sources = read_files(directory, length, num)
 
@@ -80,6 +57,20 @@ def average_file(directory, length, num):
         dists.append(distance(x, y))
 
     return sum(dists) / float(len(sources)) / float(length)
+
+
+def average_random(length, num):
+    s = 0
+    count = 0
+    start = time.clock()
+    for i in xrange(num):
+        count += 1
+        print("Progress: %s/%s" % (count, num))
+        s += (r(length), r(length))
+
+    print("Time to compute: %s" % (time.clock() - start))
+
+    return s / float(num)
 
 
 def average_sig_file(directory, length, num, c, n1, n2, compressor=None):
