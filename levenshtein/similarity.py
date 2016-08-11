@@ -1,3 +1,12 @@
+# Dodge W. Coates
+
+# Some code for testing out an idea for a similarity approximation
+# metric.  Using an extremely large alphabet to minimaize collisions,
+# hash strings, then take the cosine between the character counts on
+# those hashes.  Result is some measure of similarity that can detect
+# scrambling. Value for N in the hashing corresponds granularity of
+# scrambling.
+
 from math import sqrt
 from collections import Counter
 from numpy import histogram
