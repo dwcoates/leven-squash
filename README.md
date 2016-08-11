@@ -41,7 +41,7 @@ The Levenshtein distance of two strings is the smallest number of single charact
 
 Consider all neighborhoods of length N of the source strings, and hash them to random 64-bit values. Given a compression factor, C, each neighborhood hash is converted to a character and output with approximate probability 1/C. Equivalent string neighborhoods must hash to equivalent values. The result is a signature roughly 1/C times the length of the source string that preserves the source string's characteristics. 
 
-This idea is detailed in a blog post by Peter Coates.
+This idea is detailed in a [blog post by Peter Coates](https://hadoopoopadoop.com/2016/02/12/super-fast-estimates-of-levenshtein-distance/)
 
 ## LevenSquash<a id="sec-2-2" name="sec-2-2"></a>
 
