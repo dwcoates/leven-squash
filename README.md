@@ -58,29 +58,46 @@ The output strings of this procedure are the two signatures, of approximately 1/
 
 For (1), several differrent hashing methods are used, and found a CRC hashing implementation worked fastest and provided an acceptable distribution of characters. The character selection process described in (2) seems to be mostly invariable. The length of the alphabet chosen, however, proves to contribute critically to the derived correction factor. The values for N and C, described in (3) and (4), have interesting contributions to the process, which are discussed in the following section.
 
+## Effects of C and N
+
+The contributions of C and N to the process where not entirely obvious. To produce an appropriate data set, a program was written to collect the files in a directory, read them, and produce all possible pair combinations. 
+
+In this instance, a directory with 15 full­sized books was used, each book ranging in length from ~155k to ~170k characters of ASCII text. These 15 books produce 105 combinations, and therefore 105 distance evaluation sets. For each set, Levenshtein distance was calculated as well as estimations using a range of N and C values, N from 1 to 40 in increments of one, and C from 100 to 200 in increments of 10. 
+
+The results were useful for producing a set of statistics from which were found the followi about N (C isn't very interesting): an optimal value of N was 6. 
+
+Of the 390 estimations on 105 different string pairs (a total of 40,950 estimations), the mean value of N for the top 1,000 estimations was 5. The lowest mean estimate errors are provided by 6 ≤ N ≤ 10, much smaller than those provided by N in the range of 3 to 5. Interestingly, 3 ≤ N ≤ 5 gives the best estimates, but with very high variance. And so, this behavior for small N appears similarly at the high end of errors, where the worst 1,000 error results are also predominantly provided by N ≤ 5. We suspect the explanation for this discrepancy is related to the less­than­random signatures that very low values of N encourage (this discussed a bit more below), which results in a very large standard distribution for their errors. 
+
 ## Correction Factor<a id="sec-2-3" name="sec-2-3"></a>
 
-It might seem that the simply scaling the signature distance calculation by the compression factor, C, would provide the estimate. However, because the signatures are more random (i.e., are of higher entropy) than source strings, we can expect their respective distances to be greater. In fact, the average distance between English text, normalized, is ~0.784. This figure was produced by taking the average of 10,000 different distance calculations of strings 10,000 characters in length. The average distance for random strings picked uniformly from an alphabet of size 62, is ~0.946 &#x2013; much larger. 
+It might seem that the simply scaling the signature distance calculation by the compression factor, C, would provide the estimate. However, because the signatures are more random (i.e., are of higher entropy) than source strings, we can expect their respective normalized distances to be greater. In fact, the average distance between English text, normalized, is ~0.784. This figure was produced by taking the average of 10,000 different distance calculations of English character strings 10,000 in length. The average distance for random strings picked uniformly from an alphabet of size 62, is ~0.946 &#x2013; much larger. 
 
-Therefore, assuming that signatures are near-random, we can assume that estimates, on average, are slightly larger than the correct calculation. and should be corrected by factor proportional to the ratio, ~0.829. 
+Therefore, assuming that signatures are near-random, we can assume that estimates, on average, are slightly larger than the exact calculation, and should be corrected by factor proportional to the ratio, ~0.829. 
 
-This conjecture would seem reasonable provided the estimate is calculated with appropriate values of N. That is, because the value of N essentially defines the pattern size of text we wish to encode in the source. For example, an N of size 8 will characterize the source string in terms of length 8 patterns, which we can figure are distributed much more uniformly than length 1 patterns (e.g., the pattern "tern wil" will likely only appear once in this text, while the pattern "e" will appear many times). 
+This idea would only seem reasonable provided the estimate is calculated with appropriate values of N; because the value of N essentially defines the pattern size of text we wish to encode in the source, with N chosen too small, patterns become distributed decreasingly uniformly. For example, an N of size 8 will characterize the source string in terms of length 8 patterns, which we can figure are distributed much more uniformly than length 1 patterns (e.g., the pattern "tern wil" will likely only appear once in this text, while the pattern "e" will appear many times). This is reflected in the average signature distance figures mentioned below.
 
-A result of this fact is that larger N make for estimates with higher mean average. 
+To affirm the assumption that average distance between signatures is very similar to the average distance of random strings (i.e., signatures are near-random), tests were run over 10,000 signatures produced from 10,000 random strings of English text. As shown by the results over values of N=1 to N=40, the average distance is about equal to 0.95 for N ≥ 6, suggesting that corresponding signatures are distributed about uniformly for those N values. For 3 < N ≤ 6, average distance was ~0.91. For values of N < 3, distribution was uselessly non-uniform.
 
-Using the correction factor produced with this result on a set of 105 large files yielded an average estimation error improvement of 470% with 0 failed corrections (i.e., corrections with greater error than non-corrected estimates).
-The code used for this lives in leven-squash/demo.
+A result of this fact is that larger N make for estimates with higher mean values. 
+
+Using the correction factor produced with this result on a set of 105 large files yielded an average estimation error improvement of 470% with 0 failed corrections (i.e., corrections that mistakenly have greater error than the non-corrected version). The code used for this lives in leven-squash/demo.
 
 ## Similarity metric<a id="sec-2-4" name="sec-2-4"></a>
 
-Typical alphabet size used for output signatures is alphanumerics, 62 characters in length. For common C, say, 100, this means that a source string length 100,000 will compress to a signature of length 1,000, and will, assuming a uniform distribution, have on average each output character repeated about 16 times in the signature. Of course, many, perhaps all, of 16 instances of a particular output character in the signature correspond to different patterns in the source, i.e., are collisions. 
+A typical alphabet size used for output signatures was alphanumerics, 62 characters in length. For common C, say, 100, this means that a source string length 100,000 will compress to a signature of length ~1,000, and will, assuming a uniform distribution, have on average each output character repeated about 16 times in the signature. Of course, many, perhaps all, of the ~16 instances of a particular output character in the signature correspond to different patterns in the source, i.e., are hash collisions. 
 
-The similarity metric adaptation of this heuristic is as follows: creating a very large alphabet to minimize these types of collisions ensures a very high probability that a given character in the signature represents exactly one pattern in the input. Therefore, producing character counts of two signatures, and then the cosine between these character counts, would yield a measure of similarity of the two signatures, and therefore also of the two source strings. This technique works well, as implemented roughly in 'levenshtein.similarity', however it suffers certain problems:
+The idea behind the similarity metric adaptation of this heuristic is as follows: creating a very large alphabet to minimize these types of collisions ensures a very high probability that a given character in the signature represents exactly one pattern in the input. Therefore, producing character counts of two signatures, and then the cosine between these character counts, would yield a measure of similarity of the two signatures, and therefore also of the two source strings, that handles text "scrambling" (which levenshtein distance does very poorly). This technique works well, as implemented roughly in 'levenshtein.similarity', however it suffers certain problems:
 
 1.  C is not important. The value of C is not important because C is merely the factor by which we want to reduce the length of the source in the signature. Because cosine, like compression, is a linear operation, minimizing the length of the signatures introduces error unjustified by speed improvement.
 2.  N is difficult to determine. The pattern size we want to recognize is difficult to say definitively, and varies from input to input. The use case for this method is recognizing the scrambling of strings, so determining an optimal N is not obviously possible on a per-use basis.
 
-Some research suggests that C being unimportant seems to reduce this process to a sort of n-gram comparison. So the idea turned out to not be new.
+Some research suggests that C being unimportant seems to reduce this process to a sort of n-gram comparison. So unfortunately this idea turned out to resolve to a process that turned out to not be new.
+
+## Conclusion
+
+With an implementation of leven­squash, an algorithm for estimating Levenshtein distance, sets of results were produced to characterize parameters N and C, compression neighborhood size and factor. An optimal range for these parameters was found. Additionally entropy considerations were used to greatly improve the accuracy of the estimations. A derivative concept was explored for a similarity metric, and found it to be effective but likely already known. 
+
+Areas of continued interest and exploration are: deeper research into known implementations and alternatives of the proposed similarity metric; the odd distributions for low values of N and why they occur. 
 
 # Usage<a id="sec-3" name="sec-3"></a>
 
