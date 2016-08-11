@@ -4,8 +4,9 @@
 # metric.  Using an extremely large alphabet to minimaize collisions,
 # hash strings, then take the cosine between the character counts on
 # those hashes.  Result is some measure of similarity that can detect
-# scrambling. Value for N in the hashing corresponds granularity of
-# scrambling.
+# scrambling. Value for N in the hashing corresponds granularity to of
+# scrambling. This is mostly throwaway code. Stopped when I realized that
+# this idea isn't new.
 
 from math import sqrt
 from collections import Counter
