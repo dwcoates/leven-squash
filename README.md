@@ -91,7 +91,7 @@ The idea behind the similarity metric adaptation of this heuristic is as follows
 1.  C is not important. The value of C is not important because C is merely the factor by which we want to reduce the length of the source in the signature. Because cosine, like compression, is a linear operation, minimizing the length of the signatures introduces error unjustified by speed improvement.
 2.  N is difficult to determine. The pattern size we want to recognize is difficult to say definitively, and varies from input to input. The use case for this method is recognizing the scrambling of strings, so determining an optimal N is not obviously possible on a per-use basis.
 
-Some research suggests that C being unimportant seems to reduce this process to a sort of n-gram comparison. So unfortunately this idea turned out to resolve to a process that turned out to not be new.
+Some research suggests that C being unimportant seems to reduce this process to a sort of n-gram comparison. So unfortunately this idea turned out to reduce to a process that turned out to not be new.
 
 ## Conclusion
 
